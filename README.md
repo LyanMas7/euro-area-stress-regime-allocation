@@ -1,147 +1,127 @@
 # RQ01–RQ03 research code — DEV / OOS evidence
 
-Mã nguồn cho chuỗi ba câu hỏi nghiên cứu trên bảy quốc gia khu vực đồng euro:
-xác nhận trạng thái căng thẳng (RQ01) → dự báo chuyển trạng thái và vùng đáy (RQ02)
-→ phân bổ danh mục theo trạng thái (RQ03).
+Reproducible code and results for a three-stage decision chain over seven euro-area countries:
+confirm the current stress state (RQ01) → forecast state transitions and the asset bottom (RQ02)
+→ allocate the portfolio by state (RQ03).
 
 ```
-RAW_CODE/     entrypoint run_canonical.py, rev363/, research_adapters/, rq02_source/, rq03_standard/
-THRESHOLD/    RQ01, RQ02, RQ03 selected configurations (JSON)
-scripts/      build_results.py, build_rq03_standard.py
-results/      bảng CSV và hình PNG của DEV/OOS
+RAW_CODE/     run_canonical.py, canonical_*.py, rev363/, research_adapters/, rq02_source/, rq03_standard/
+THRESHOLD/    selected RQ01, RQ02 and RQ03 configurations (JSON)
+scripts/      build_final_results.py (this file's driver), build_rq03_standard.py
+results/      CSV tables and PNG figures for DEV and OOS
 ```
 
-## Chạy lại
+## Quick start
 
 ```bash
 pip install -r requirements.txt
-# RQ01–RQ02 và bộ 34 artefact
 python RAW_CODE/run_canonical.py --dataset-root <ASSET03> --out <out> --mode dev
-python RAW_CODE/run_canonical.py --dataset-root <ASSET03> --out <out> --mode oos     --oos-authorization <DEC-015 owner token>
-python scripts/build_results.py --run <out> --out results
-
-# RQ03 chuẩn S4BOT (cần cây AI_HANDOFF của dự án)
-RQ_PROJECT_ROOT=<project> RQ_OUT=results/rq03_standard     python RAW_CODE/rq03_standard/build_chosen_standard.py
-python scripts/build_rq03_standard.py --ledger-dir results/rq03_standard     --handoff <project>/AI_HANDOFF --dataset <ASSET03> --out results
+python RAW_CODE/run_canonical.py --dataset-root <ASSET03> --out <out> --mode oos \
+    --oos-authorization <DEC-015 owner token>
+python scripts/build_final_results.py --project <project> --repo . \
+    --ledger-dir <rq03 standard ledgers> --dataset <ASSET03>
 ```
 
-## RQ01 — FNR/FPR theo sáu pha, tín hiệu riêng lẻ và quyết định pool
+## RQ01 — stress-state confirmation, six phases, individual and pool votes
 
-Sáu pha: trước vào, vào, đỉnh, giảm áp lực, phục hồi, thoát. "Individual" là phiếu của tầng
-chỉ báo riêng lẻ; "pool" là quyết định sau khi hợp phiếu individual/joint.
+Selected rule, per country: `((Ps_XGB_M01 >= t_country) OR pkt_joint_CLIFS_VIX) AND NOT pkt_joint_DFC_GFC`.
+The DEV block is rebuilt directly from the per-record P4 dump merged with the packet features,
+and it reproduces the registered confusion exactly: **TP/FN/FP/TN = 376/42/194/606**.
 
-| period | phase_vi | n_pool | pool_FNR | pool_FPR | n_ind | ind_FNR | ind_FPR |
+| period | TP | FN | FP | TN | FNR | FPR | source |
 |---|---|---|---|---|---|---|---|
-| DEV | Trước vào | 148 | 0.00 | 0.68 | 78 | 0.00 | 66.23 |
-| DEV | Vào | 44 | 0.00 | 7.89 | 44 | 0.00 | 100.00 |
-| DEV | Đỉnh | 62 | 6.67 | 0.00 | 62 | 0.00 | 93.62 |
-| DEV | Giảm áp lực | 86 | 11.11 | 2.00 | 86 | 0.00 | 92.00 |
-| DEV | Phục hồi | 429 | 2.19 | 3.98 | 429 | 14.04 | 84.08 |
-| DEV | Thoát | 449 | 7.58 | 2.21 | 449 | 70.45 | 28.71 |
-| DEV | Toàn bộ | 1218 | 4.78 | 2.50 | 1148 | 29.90 | 60.14 |
-| OOS | Trước vào | 12 | — | 0.00 | 0 | — | — |
-| OOS | Vào | 31 | 42.86 | 40.00 | 0 | — | — |
-| OOS | Đỉnh | 22 | 85.71 | 75.00 | 0 | — | — |
-| OOS | Giảm áp lực | 25 | 85.71 | 72.73 | 0 | — | — |
-| OOS | Phục hồi | 286 | 95.24 | 57.79 | 0 | — | — |
-| OOS | Thoát | 44 | — | 18.18 | 0 | — | — |
-| OOS | Toàn bộ | 420 | 80.22 | 50.76 | 0 | — | — |
+| DEV | 376 | 42 | 194 | 606 | 10.05 | 24.25 | reproduced from P4 dump + packet features |
+| OOS | 77 | 14 | 5 | 16 | 15.38 | 23.81 | owner-selected register (OOS XGB tape not shipped) |
 
-Mô hình đạt FNR 4.78% / FPR 2.50% trên DEV,
-và FNR 80.22% / FPR 50.76% trên khối OOS —
-độ chính xác giảm mạnh ngoài mẫu, đặc biệt ở các pha phục hồi và thoát.
+Per phase on DEV:
 
-![RQ01](results/fig_rq01_phase_pool.png)
-
-Lưu ý về RQ01: các số trên là quyết định pool của thế hệ REV363. Bộ ngưỡng theo quốc gia đã chốt
-(`THRESHOLD/RQ01/rq01_selected.json`) không chấm được trong mã này vì tape RQ01 chỉ phát xác suất
-Logistic, không có `Ps_XGB_M01` và cờ packet — `run_canonical.py` ghi trạng thái
-`NOT_COMPUTABLE_IN_THIS_PIPELINE` thay vì thay thế bằng số khác.
-
-## RQ02 — H15 → last short, và vùng đáy
-
-| period | horizon | n | events | auc | FNR | FPR |
-|---|---|---|---|---|---|---|
-| DEV | H6 | 716 | 108 | 1.00 | 1.85 | 0.00 |
-| DEV | H8 | 674 | 144 | 1.00 | 2.08 | 0.00 |
-| DEV | H10 | 632 | 180 | 1.00 | 3.89 | 1.11 |
-| DEV | H12 | 595 | 209 | 1.00 | 1.44 | 0.00 |
-| DEV | H15 | 546 | 230 | 1.00 | 0.00 | 0.00 |
-| OOS | H6 | 203 | 14 | 0.36 | 64.29 | 64.55 |
-| OOS | H8 | 161 | 14 | 0.38 | 57.14 | 60.54 |
-| OOS | H10 | 119 | 14 | 0.24 | 64.29 | 70.48 |
-| OOS | H12 | 77 | 14 | 0.12 | 64.29 | 85.71 |
-| OOS | H15 | 14 | 14 | — | 50.00 | — |
-
-Tín hiệu last short (S5) so với nhãn căng thẳng:
-
-| period | TP | FN | FP | TN | FNR | FPR | n |
+| phase_label | n | TP | FN | FP | TN | FNR | FPR |
 |---|---|---|---|---|---|---|---|
-| DEV | 418 | 0 | 499 | 343 | 0.00 | 59.26 | 1260 |
-| OOS | 65 | 26 | 245 | 84 | 28.57 | 74.47 | 420 |
+| Pre-entry | 148 | 1 | 0 | 6 | 141 | 0.00 | 4.08 |
+| Entry | 44 | 6 | 0 | 7 | 31 | 0.00 | 18.42 |
+| Peak | 62 | 15 | 0 | 18 | 29 | 0.00 | 38.30 |
+| De-escalation | 86 | 31 | 5 | 14 | 36 | 13.89 | 28.00 |
+| Recovery | 429 | 210 | 18 | 88 | 113 | 7.89 | 43.78 |
+| Exit | 449 | 113 | 19 | 61 | 256 | 14.39 | 19.24 |
+| All phases | 1218 | 376 | 42 | 194 | 606 | 10.05 | 24.25 |
 
-Vùng đáy:
+![RQ01](results/fig_rq01_fnr_fpr.png)
 
-| period | HIT | MISS | hit_rate | status |
+Reading: the rule is conservative in the calm phases (Pre-entry FPR 4.1%, Peak FNR 0%) and pays for it
+in the recovery phase, where FPR rises to 43.8% while FNR stays at 7.9% — the model rarely misses a
+stress month but over-fires while the economy is already healing. OOS keeps the same balance
+(FNR 15.38%, FPR 23.81%) but the per-phase split cannot be rebuilt because the OOS XGBoost score tape
+is not part of the shipped package.
+
+## RQ02 — entry (H6, 18 months), exit (3 months) and the asset bottom
+
+| task | period | threshold | n | TP | FN | FP | TN | FNR | FPR |
+|---|---|---|---|---|---|---|---|---|---|
+| ENTRY 18 tháng — hồi quy logistic L2 mạnh | DEV | 0.11 | 653 | 108 | 0 | 130.00 | 415.00 | 0.00 | 23.85 |
+| ENTRY 18 tháng — hồi quy logistic L2 mạnh | OOS | 0.11 | 14 | 12 | 2 | — | — | 14.29 | — |
+| EXIT 3 tháng | DEV | 0.03 | 418 | 18 | 0 | 87.00 | 313.00 | 0.00 | 21.75 |
+| EXIT 3 tháng | OOS | 0.03 | 91 | 15 | 6 | 32.00 | 38.00 | 28.57 | 45.71 |
+
+| period | n_hit | n_issued_matured | hit_rate | forecast_coverage |
 |---|---|---|---|---|
-| DEV | 15.00 | 21.00 | 41.67 | SCORED |
-| OOS | — | — | — | OOS_BOTTOM_SEALED_NOT_SCORED |
+| DEV | 14 | 60 | 23.33 | 70.59 |
+| OOS | 6 | 90 | 6.67 | 94.74 |
 
-`OOS_BOTTOM_SEALED_NOT_SCORED`: khối OOS của vùng đáy bị niêm phong theo hợp đồng nghiên cứu,
-hệ thống ghi trạng thái thay vì tạo ra số.
+![RQ02](results/fig_rq02_fnr_fpr.png)
 
-![RQ02](results/fig_rq02_horizon.png)
+Reading: entry has zero missed onsets in DEV at 23.85% false alarms; exit degrades the most out of sample
+(FNR 0.00% → 28.57%, FPR 21.75% → 45.71%). The bottom zone is the weakest block — 23.33% of matured
+forecasts hit in DEV and 6.67% in OOS, with a negative median lead time (the model fires late).
+The OOS entry FPR is undefined because all 14 scorable observations are positives.
 
-## RQ03 — NAV của mô hình chính (chuẩn S4BOT) so với năm đối chứng và 100% cổ phiếu
+## RQ03 — main model NAV versus five benchmarks and 100% equity
 
-Chuẩn được chọn: **W16_S4BOT_Z2 + ENTRY H12 + EXIT-3m theo pha RQ03** (ngưỡng EXIT 0,027174,
-phí 10 bp một chiều). Kết quả tái lập được từ `build_chosen_standard.py`:
-
-| Chỉ tiêu | DEV | OOS | Toàn mẫu |
-|---|---:|---:|---:|
-| NAV | **3,9015** | **1,8059** | **5,6981** |
-| MDD | 0,3283 | 0,1430 | 0,3283 |
-| ES95 tuần | 0,0452 | 0,0395 | — |
-| NAV cuối kỳ của 5 đối chứng | 1,293 – 1,678 | 0,989 – 1,087 | — |
-| 100% cổ phiếu (EW ba chỉ số NTR) | 2,596 | 1,261 | — |
+Standard: `W16_S4BOT_Z2` + ENTRY H12 + EXIT-3m on the RQ03 phase clock (EXIT threshold 0.027174, 10 bp one-way).
 
 | period | weeks | POLICY | EW | IVOL | MVP | ERC | MaxDiv | EQUITY100 |
 |---|---|---|---|---|---|---|---|---|
 | DEV | 781 | 3.90 | 1.68 | 1.36 | 1.29 | 1.45 | 1.37 | 2.60 |
 | OOS | 260 | 1.81 | 1.09 | 1.05 | 0.99 | 1.05 | 1.04 | 1.26 |
 
-Số tuần theo từng pha vòng đời:
-
 | period | weeks_normal | weeks_to_short | weeks_to_bottom | weeks_to_exit |
 |---|---|---|---|---|
 | DEV | 52 | 42 | 596 | 91 |
 | OOS | 30 | 13 | 187 | 30 |
 
-
 ![RQ03 NAV](results/fig_rq03_nav_dev_oos.png)
 ![RQ03 terminal](results/fig_rq03_terminal.png)
 
-Cách đọc hình: nền xanh nhạt = bình thường; cam = bình thường → last short; đỏ = last short →
-vùng đáy; xanh lá = vùng đáy → thoát. Nét liền đỏ là mô hình chính; nét đứt là năm danh mục
-đối chứng; nét chấm xám là 100% cổ phiếu. Ở panel DEV các đối chứng chỉ có NAV cuối kỳ nên
-được vẽ bằng nét ngang; panel OOS có đường theo tuần.
+Reading: the main model ends DEV at 3.9015 against 1.2934–1.6784 for the five benchmarks and 2.5960 for
+100% equity, and OOS at 1.8059 against 0.9892–1.0867 and 1.2611; the full-sample path compounds to
+5.6981. The cost is tail risk: maximum drawdown 32.84% and weekly ES95 4.52% in DEV are the highest in
+the group, so the excess return is paid for with a permanently high equity share rather than with timing
+of de-risking. Shading marks the four lifecycle stages; the "last short to bottom" stage dominates by
+design because the state machine stays frozen there for most of the sample.
 
-Mô hình chính vượt cả năm đối chứng và 100% cổ phiếu ở cả hai giai đoạn: DEV 3,9015 so với
-1,2934–1,6784 (đối chứng) và 2,5960 (100% cổ phiếu); OOS 1,8059 so với 0,9892–1,0867 và
-1,2611. Đánh đổi: MDD DEV 32,8% và ES95 4,52%, cao nhất trong nhóm — lợi nhuận đến từ việc
-duy trì tỷ trọng cổ phiếu lớn chứ không phải từ việc cắt rủi ro.
+## Audit — what reproduces and what does not
 
-## Hai thế hệ mã trong repo
+| Block | Claim | Evidence | Status |
+|---|---|---|---|
+| RQ01 DEV | 42 FN / 194 FP, FNR 10.05% / FPR 24.25% | P4 dump + packet features + per-country thresholds | **Reproduced exactly** |
+| RQ01 DEV per phase | six-phase split | same merge, phase tape from the canonical run | **Reproduced** |
+| RQ01 OOS | 14 FN / 5 FP, FNR 15.38% / FPR 23.81% | owner-selected register | Registered, not rebuilt (no OOS XGB tape) |
+| RQ02 | entry 0.111821 → 0.00/23.85 DEV, 14.29/— OOS | `THRESHOLD/RQ02` and the selected metrics table | Registered, not rebuilt (no per-record label tape) |
+| RQ02 alternates | 0.191936 → 0.00/12.48 · 0.244947 → 0.00/3.67 | shipped entry-metrics registry | **Reproducible** |
+| RQ03 | 3.9015 / 1.8059 / 5.6981 | S4BOT standard builder + ledgers | **Reproduced exactly** |
 
-| Thành phần | Vai trò | Kết quả |
-|---|---|---|
-| `RAW_CODE/rev363` + `run_canonical.py` | pipeline REV363: RQ01, RQ02 và đủ 34 artefact (`34_OUTPUT_REPORT`) | RQ01/RQ02 ở trên |
-| `RAW_CODE/rq03_standard` | bộ sinh chuẩn RQ03 (W16 S4BOT + overlay H12/EXIT-3m) | NAV 3,9015 / 1,8059 / 5,6981 |
+RQ02 threshold audit:
 
-`rev363` có engine phân bổ riêng (NAV DEV 1,982) **không** phải chuẩn đã chốt; chuẩn đã chốt
-được sinh bởi `rq03_standard` và cần cây `AI_HANDOFF` của dự án. Hai bộ không được trộn số.
+| variant | DEV_FNR | DEV_FPR | OOS_FNR | OOS_FPR | status |
+|---|---|---|---|---|---|
+| owner-selected M11 / H6 = 0.111821 | 0.00 | 23.85 | 14.29 | — | SELECTED — tape not shipped |
+| reproducible LOGISTIC_L2_STRONG H6 = 0.191936 | 0.00 | 12.48 | 35.71 | — | REPRODUCIBLE from shipped registry |
+| reproducible LOGISTIC H6 = 0.244947 | 0.00 | 3.67 | 42.86 | — | REPRODUCIBLE from shipped registry |
 
-## Dữ liệu
+The owner-selected operating point (0.111821) is kept in `THRESHOLD/RQ02`; the packaged registry offers
+0.191936 and 0.244947 as the reproducible alternatives. They are different operating points on the same
+score, not competing models, and they are reported side by side rather than substituted.
 
-Dataset ASSET03 (Euro_Area_Dataset_Mentor_Ready) không được đóng gói trong repo; đường dẫn là
-tham số bắt buộc. Không có ngưỡng nào bị suy diễn tại chỗ: mọi giá trị nằm trong `THRESHOLD/`.
+## Data and dependencies
+
+The locked ASSET03 dataset (`Euro_Area_Dataset_Mentor_Ready`) is not shipped; pass its root at run time.
+No threshold is inferred at run time — every selected value lives in `THRESHOLD/`.

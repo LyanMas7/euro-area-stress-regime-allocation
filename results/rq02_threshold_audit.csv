@@ -1,0 +1,4 @@
+﻿variant,DEV_FNR,DEV_FPR,OOS_FNR,OOS_FPR,status
+owner-selected M11 / H6 = 0.111821,0.0,23.85,14.29,,SELECTED — tape not shipped
+reproducible LOGISTIC_L2_STRONG H6 = 0.191936,0.0,12.48,35.71,,REPRODUCIBLE from shipped registry
+reproducible LOGISTIC H6 = 0.244947,0.0,3.67,42.86,,REPRODUCIBLE from shipped registry

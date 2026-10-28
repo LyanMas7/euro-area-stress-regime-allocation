@@ -1,0 +1,5 @@
+﻿task,period,threshold,n,TP,FN,FP,TN,FNR,FPR
+ENTRY 18 tháng — hồi quy logistic L2 mạnh,DEV,0.111821,653,108,0,130.0,415.0,0.0,23.85
+ENTRY 18 tháng — hồi quy logistic L2 mạnh,OOS,0.111821,14,12,2,,,14.29,
+EXIT 3 tháng,DEV,0.027174,418,18,0,87.0,313.0,0.0,21.75
+EXIT 3 tháng,OOS,0.027174,91,15,6,32.0,38.0,28.57,45.71
