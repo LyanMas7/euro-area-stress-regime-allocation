@@ -53,6 +53,11 @@ và FNR 80.22% / FPR 50.76% trên khối OOS —
 
 ![RQ01](results/fig_rq01_phase_pool.png)
 
+Lưu ý về RQ01: các số trên là quyết định pool của thế hệ REV363. Bộ ngưỡng theo quốc gia đã chốt
+(`THRESHOLD/RQ01/rq01_selected.json`) không chấm được trong mã này vì tape RQ01 chỉ phát xác suất
+Logistic, không có `Ps_XGB_M01` và cờ packet — `run_canonical.py` ghi trạng thái
+`NOT_COMPUTABLE_IN_THIS_PIPELINE` thay vì thay thế bằng số khác.
+
 ## RQ02 — H15 → last short, và vùng đáy
 
 | period | horizon | n | events | auc | FNR | FPR |
