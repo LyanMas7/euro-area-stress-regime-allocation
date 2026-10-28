@@ -128,6 +128,7 @@ Shading marks the four lifecycle stages.</figcaption></figure>
 over the continuous path. The premium is paid for with risk: maximum drawdown of 32.84% and 14.30%, and the highest weekly
 expected shortfall of the six strategies in both windows. This is a return engine with a defensive overlay, not a
 risk-control device. Benchmarks are passive construction rules and are not subject to the lock.</p>
+<table><thead><tr><th>strategy</th><th>MDD_DEV</th><th>MDD_OOS</th><th>ES95_DEV</th><th>ES95_OOS</th></tr></thead><tbody><tr><td>Main model</td><td>0.3283</td><td>0.1430</td><td>0.0452</td><td>0.0395</td></tr><tr><td>EW</td><td>0.1943</td><td>0.1573</td><td>0.0198</td><td>0.0268</td></tr><tr><td>IVOL</td><td>0.0498</td><td>0.0737</td><td>0.0067</td><td>0.0091</td></tr><tr><td>MVP</td><td>0.0337</td><td>0.0819</td><td>0.0045</td><td>0.0061</td></tr><tr><td>ERC</td><td>0.0375</td><td>0.0597</td><td>0.0066</td><td>0.0068</td></tr><tr><td>MaxDiv</td><td>0.0342</td><td>0.0748</td><td>0.0052</td><td>0.0072</td></tr></tbody></table>
 <figure><img src="assets/fig_rq03_terminal.png" alt="Terminal NAV by strategy">
 <figcaption>Terminal NAV by strategy in each window. The equity-only reference is the honest yardstick for a portfolio that
 carries more than 70% equity on average.</figcaption></figure>
@@ -143,7 +144,7 @@ signal.</p>
 
 <h2>6 · Reproducibility and limitations</h2>
 <p>Code, selected thresholds and the exact tables behind every figure are in the repository:
-<a href="../README.md">README</a>, <code>RAW_CODE/</code>, <code>THRESHOLD/</code>, <code>results/</code>. The dataset is
+<code>README.md</code>, <code>RAW_CODE/</code>, <code>THRESHOLD/</code>, <code>results/</code>. The dataset is
 not redistributed. Costs are fixed at 10 basis points one-way with no market impact, no borrow cost and no liquidity
 constraint; the sample covers seven countries and one out-of-sample shock.</p>
 <p class="note">Research output, not an investment recommendation.</p>

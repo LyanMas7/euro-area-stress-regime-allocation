@@ -55,6 +55,7 @@ def main():
     r3 = pd.read_csv(res / "rq03_nav_terminal.csv")
     r3p = pd.read_csv(res / "rq03_phase_stats.csv")
     par = pd.read_csv(res / "rq03_parameters.csv")
+    risk = pd.read_csv(res / "rq03_risk.csv")
 
     r1c = r1c.rename(columns={"country": "Country", "threshold": "Selected threshold"})
     r1c["Selected threshold"] = r1c["Selected threshold"].astype(float)
@@ -387,6 +388,13 @@ and {d3.ERC:.4f} for the best optimised benchmark; the fully invested equity por
 **Interpretation.** The model beats every passive construction, but not the naive equity benchmark: a portfolio that
 simply holds the three equity indices and nothing else earns {d3.EQUITY100:.4f}. The excess over equity comes from the
 bond and cash sleeve during drawdowns, not from a better equity selection.
+
+**Risk, side by side.** Maximum drawdown and weekly expected shortfall for the same six strategies:
+
+{table(risk, ["strategy", "MDD_DEV", "MDD_OOS", "ES95_DEV", "ES95_OOS"], {"MDD_DEV": "{:.4f}", "MDD_OOS": "{:.4f}", "ES95_DEV": "{:.4f}", "ES95_OOS": "{:.4f}"})}
+The Main Model carries the deepest drawdown of the group in development (32.84% against 19.43% for equal weights
+and 3.4–5.0% for the optimised benchmarks) and the highest weekly expected shortfall in both windows (4.52% and 3.95%).
+That is the price of the return premium, and it is paid continuously rather than in a single episode.
 
 **Where the return is made.** {table(allp.reset_index(), ["period", "avg_equity_pct", "avg_bond_pct", "avg_turnover_pct", "total_cost_pct_nav"])}
 The strategy carries an average equity share of {allp.loc["DEV", "avg_equity_pct"]:.1f}% and pays

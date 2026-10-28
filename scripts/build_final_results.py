@@ -224,6 +224,17 @@ def rq03(project: Path, ledger: Path, dataset: Path, out: Path):
     t = pd.DataFrame(rows)
     t.to_csv(out / "rq03_nav_terminal.csv", index=False, encoding="utf-8-sig")
 
+    pack = project / "Bài luận/Table, Figure đầu ra/RQ03/tables/B03_2_RQ03_NAV.csv"
+    if pack.is_file():
+        b = pd.read_csv(pack).rename(columns={
+            "Chiến lược": "strategy", "MDD DEV": "MDD_DEV", "MDD OOS": "MDD_OOS",
+            "ES95 DEV": "ES95_DEV", "ES95 OOS": "ES95_OOS"})
+        b["strategy"] = b["strategy"].replace({"Chuẩn nghiên cứu (chosen)": "Main model"})
+        risk = b[["strategy", "MDD_DEV", "MDD_OOS", "ES95_DEV", "ES95_OOS"]].copy()
+        for c in risk.columns[1:]:
+            risk[c] = pd.to_numeric(risk[c], errors="coerce")
+        risk.to_csv(out / "rq03_risk.csv", index=False, encoding="utf-8-sig")
+
     fig, axes = plt.subplots(1, 2, figsize=(13, 4.3))
     names = ["POLICY"] + STRATS + ["EQUITY100"]
     for ax, period in zip(axes, ("DEV", "OOS")):

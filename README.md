@@ -403,6 +403,21 @@ and 1.4548 for the best optimised benchmark; the fully invested equity portfolio
 simply holds the three equity indices and nothing else earns 2.5960. The excess over equity comes from the
 bond and cash sleeve during drawdowns, not from a better equity selection.
 
+**Risk, side by side.** Maximum drawdown and weekly expected shortfall for the same six strategies:
+
+| strategy | MDD_DEV | MDD_OOS | ES95_DEV | ES95_OOS |
+|---|---|---|---|---|
+| Main model | 0.3283 | 0.1430 | 0.0452 | 0.0395 |
+| EW | 0.1943 | 0.1573 | 0.0198 | 0.0268 |
+| IVOL | 0.0498 | 0.0737 | 0.0067 | 0.0091 |
+| MVP | 0.0337 | 0.0819 | 0.0045 | 0.0061 |
+| ERC | 0.0375 | 0.0597 | 0.0066 | 0.0068 |
+| MaxDiv | 0.0342 | 0.0748 | 0.0052 | 0.0072 |
+
+The Main Model carries the deepest drawdown of the group in development (32.84% against 19.43% for equal weights
+and 3.4–5.0% for the optimised benchmarks) and the highest weekly expected shortfall in both windows (4.52% and 3.95%).
+That is the price of the return premium, and it is paid continuously rather than in a single episode.
+
 **Where the return is made.** | period | avg_equity_pct | avg_bond_pct | avg_turnover_pct | total_cost_pct_nav |
 |---|---|---|---|---|
 | DEV | 72.60 | 10.94 | 7.80 | 4.09 |

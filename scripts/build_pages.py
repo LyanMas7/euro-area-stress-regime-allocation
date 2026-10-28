@@ -69,6 +69,7 @@ def main():
     r2b = pd.read_csv(res / "rq02_bottom_zone.csv")
     r3 = pd.read_csv(res / "rq03_nav_terminal.csv")
     par = pd.read_csv(res / "rq03_parameters.csv")
+    risk = pd.read_csv(res / "rq03_risk.csv")
 
     d3 = r3[r3.period == "DEV"].iloc[0]; o3 = r3[r3.period == "OOS"].iloc[0]
     dev = r1s[r1s.period == "DEV"].iloc[0]; oos = r1s[r1s.period == "OOS"].iloc[0]
@@ -176,6 +177,7 @@ Shading marks the four lifecycle stages.</figcaption></figure>
 over the continuous path. The premium is paid for with risk: maximum drawdown of 32.84% and 14.30%, and the highest weekly
 expected shortfall of the six strategies in both windows. This is a return engine with a defensive overlay, not a
 risk-control device. Benchmarks are passive construction rules and are not subject to the lock.</p>
+{table(risk, ["strategy", "MDD_DEV", "MDD_OOS", "ES95_DEV", "ES95_OOS"], {"MDD_DEV": "{:.4f}", "MDD_OOS": "{:.4f}", "ES95_DEV": "{:.4f}", "ES95_OOS": "{:.4f}"})}
 <figure><img src="assets/fig_rq03_terminal.png" alt="Terminal NAV by strategy">
 <figcaption>Terminal NAV by strategy in each window. The equity-only reference is the honest yardstick for a portfolio that
 carries more than 70% equity on average.</figcaption></figure>
@@ -191,7 +193,7 @@ signal.</p>
 
 <h2>6 · Reproducibility and limitations</h2>
 <p>Code, selected thresholds and the exact tables behind every figure are in the repository:
-<a href="../README.md">README</a>, <code>RAW_CODE/</code>, <code>THRESHOLD/</code>, <code>results/</code>. The dataset is
+<code>README.md</code>, <code>RAW_CODE/</code>, <code>THRESHOLD/</code>, <code>results/</code>. The dataset is
 not redistributed. Costs are fixed at 10 basis points one-way with no market impact, no borrow cost and no liquidity
 constraint; the sample covers seven countries and one out-of-sample shock.</p>
 <p class="note">Research output, not an investment recommendation.</p>
