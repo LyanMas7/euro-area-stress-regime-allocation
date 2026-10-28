@@ -1,6 +1,6 @@
 {
   "figure": null,
-  "title": "Restructuring Decision Flow - How RQ01, RQ02 and RQ03 Control Allocation",
+  "title": "Restructuring Cycle - Normal, Last Short, Bottom, Post-Bottom",
   "proof": false,
   "page_size_in": [
     8.5,
@@ -8,6 +8,6 @@
   ],
   "style_register_version": "1.0.0",
   "files": {
-    "fig03_rq03_restructuring_flow.png": "9eab9bf05e98187a7aa6573e018a6b2957b8d2150caabf11dcb3dba1cad7d51a"
+    "fig03_rq03_restructuring_flow.png": "e81fd9a59e87960ef4fa2a480a7b288fa1726a1c74f1468d2ba57accf67b1f98"
   }
 }

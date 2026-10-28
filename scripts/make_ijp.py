@@ -79,10 +79,12 @@ def fig_ijp01(out: Path) -> None:
                 arrowprops=dict(arrowstyle="<|-|>", color=INK, lw=0.9))
     ax.text(6.0, 1.15, "endpoint difference D = sign x (last - first)", fontsize=8,
             fontfamily="Garamond", ha="center")
-    ax.axhline(7.9, xmin=0.02, xmax=0.98, color=MAG, lw=0.9, linestyle=(0, (5, 2.5)))
-    ax.text(11.6, 7.9, "strong cut = Q75", fontsize=7.4, fontfamily="Garamond", va="center", color=MAG)
-    ax.axhline(3.2, xmin=0.02, xmax=0.98, color=GREEN, lw=0.9, linestyle=(0, (5, 2.5)))
-    ax.text(11.6, 3.2, "weak cut = Q35", fontsize=7.4, fontfamily="Garamond", va="center", color=GREEN)
+    ax.axhline(7.9, xmin=0.02, xmax=0.85, color=MAG, lw=0.9, linestyle=(0, (5, 2.5)))
+    ax.text(10.35, 7.9, "strong cut = Q75", fontsize=7.4, fontfamily="Garamond", va="center",
+            color=MAG, ha="left", clip_on=False)
+    ax.axhline(3.2, xmin=0.02, xmax=0.85, color=GREEN, lw=0.9, linestyle=(0, (5, 2.5)))
+    ax.text(10.35, 3.2, "weak cut = Q35", fontsize=7.4, fontfamily="Garamond", va="center",
+            color=GREEN, ha="left", clip_on=False)
     ax.text(6.0, 9.4, "up = confirming direction (green), down = opposing (red)", fontsize=7.6,
             fontfamily="Garamond", ha="center")
 
@@ -107,16 +109,18 @@ def fig_ijp02(out: Path) -> None:
     xa = np.linspace(1, 11, 7)
     ax.plot(xa, [8.0] * 7, "o", color=NAVY, markersize=5)
     ax.text(0.05, 9.15, "Indicator A (monthly) - its own Q35/Q75 cuts", fontsize=8.5, fontfamily="Garamond", va="bottom")
-    ax.plot([1, 11], [8.6, 8.6], color=MAG, lw=0.8, linestyle=(0, (5, 2.5)))
-    ax.text(11.5, 8.6, "Q75(A)", fontsize=7.4, fontfamily="Garamond", va="center", color=MAG)
+    ax.plot([1, 10.2], [8.6, 8.6], color=MAG, lw=0.8, linestyle=(0, (5, 2.5)))
+    ax.text(10.35, 8.6, "Q75(A)", fontsize=7.4, fontfamily="Garamond", va="center", color=MAG,
+            ha="left", clip_on=False)
     xb = np.linspace(1.5, 11.5, 7)
     ax.plot(xb, [3.4] * 7, "s", color=GREEN, markersize=5)
     ax.text(0.05, 4.55, "Indicator B (same calendar months) - its own cuts", fontsize=8.5, fontfamily="Garamond", va="bottom")
-    ax.plot([1, 11], [4.0, 4.0], color=GREEN, lw=0.8, linestyle=(0, (5, 2.5)))
-    ax.text(11.5, 4.0, "Q35(B)", fontsize=7.4, fontfamily="Garamond", va="center", color=GREEN)
+    ax.plot([1, 10.2], [4.0, 4.0], color=GREEN, lw=0.8, linestyle=(0, (5, 2.5)))
+    ax.text(10.35, 4.0, "Q35(B)", fontsize=7.4, fontfamily="Garamond", va="center", color=GREEN,
+            ha="left", clip_on=False)
     for a, b in zip(xa[:4], xb[:4]):
         ax.plot([a, b], [8.0, 3.4], color=INK, lw=0.5, linestyle=":")
-    ax.text(3.4, 5.8, "synchronized bases\n(same issue, EXACT L = 0)", fontsize=7.6, fontfamily="Garamond",
+    ax.text(8.1, 5.9, "synchronized bases\n(same issue, EXACT L = 0)", fontsize=7.6, fontfamily="Garamond",
             ha="center", va="center")
 
     box(page, 0.95, 4.95, 2.05, 0.72, "Selection gates:\n>= 2 matched pairs,\n15% false-alarm budget")
@@ -228,7 +232,7 @@ def fig_ijp06(out: Path) -> None:
     ax.text(0.05, 4.2, "short indicator (6-month change window)", fontsize=8.5, fontfamily="Garamond", va="bottom")
     for a, b in zip(xa, xb):
         ax.plot([a, b], [7.6, 3.0], color=INK, lw=0.5, linestyle=":")
-    ax.text(6.5, 5.4, "paired bases counted only when both members pass their cuts\nand both are published before the issue (EXACT L = 0)",
+    ax.text(6.0, 1.45, "paired bases counted only when both members pass their cuts\nand both are published before the issue (EXACT L = 0)",
             fontsize=7.8, fontfamily="Garamond", ha="center", va="center")
     box(page, 0.95, 5.75, 2.05, 0.72, "Long pairs:\nL_CG and L_DSR-P\nfeed the entry pool")
     box(page, 3.225, 5.75, 2.05, 0.72, "Short pairs:\nall 21 pairs\nfeed exit and bottom")

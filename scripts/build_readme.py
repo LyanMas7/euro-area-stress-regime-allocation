@@ -376,13 +376,13 @@ mid and small cap) and two bond groups (short and long maturity) plus a cash pro
 these six. Five independent benchmarks are constructed from the same universe with documented passive rules and are
 *not* subject to the Main Model's state machine or its lock:
 
-| Benchmark | Construction | Objective | Constraints and assumptions |
-|---|---|---|---|
-| EW | equal weight across the six assets | no reliance on any single estimate | long-only, fully invested, re-solved weekly |
-| IVOL | weights inversely proportional to realised volatility | risk scaling with one parameter | long-only simplex, weekly re-solve |
-| MVP | minimum-variance weights | minimise portfolio variance | long-only simplex, active-set solver |
-| ERC | equal risk contribution | equalise each asset's risk contribution | long-only simplex, Newton solver |
-| MaxDiv | maximum diversification | maximise the diversification ratio | long-only simplex, exact search |
+| Benchmark | Construction |
+|---|---|
+| EW | equal weight across the six assets |
+| IVOL | weights inversely proportional to realised volatility |
+| MVP | minimum-variance weights |
+| ERC | equal risk contribution |
+| MaxDiv | maximum diversification |
 
 A sixth reference, **100% equity**, holds the three equity indices equal-weighted with no bonds and no cash. It is the
 honest yardstick for a strategy whose average equity share is above 70%.
@@ -392,25 +392,22 @@ honest yardstick for a strategy whose average equity share is above 70%.
 The Main Model is not a static weighting rule with a filter on top. It is a four-state machine in which the *permission*
 to restructure changes with the state. The diagram below is the complete transition structure.
 
-{figure_block("Restructuring Decision Flow - How RQ01, RQ02 and RQ03 Control Allocation",
+{figure_block("Restructuring Cycle - Normal, Last Short, Bottom, Post-Bottom",
               "results/fig03_rq03_restructuring_flow.png",
-              "Layer A carries the financial state: P_N and P_S are complementary by construction, equal to the "
-              "weekly entry hazard in normal states and the weekly exit hazard in stress states. Layer B carries the "
-              "transition clock: entry, the last-short flag, the lock, the bottom gates and exit. Layer C carries the "
-              "risk and weight constraints. The engine applies them in order, so a favourable signal produces no "
-              "trade while the lock is active or when the risk caps make the target infeasible.",
+              "RQ01 identifies the state, RQ02 supplies Pn and Ps from the H6 quarterly pre-onset model and the 3-month "
+              "exit model, and RQ03 applies the risk cap, volatility and z-score constraints. The portfolio is "
+              "locked between last short and bottom confirmation, so a favourable signal produces no trade "
+              "while the lock is active.",
               "Bottom confirmation does not guarantee a positive return. Across the seven episodes the realised "
               "equity trough arrived 0 to 20 weeks after the model's confirmation date, so the confirmation is a "
               "state change, not a timing signal.")}
 
-| Restructuring state | RQ01 inputs | RQ02 inputs | RQ03 conditions | Permitted action |
+| Phase | RQ01 | RQ02 | RQ03 | Allocation |
 |---|---|---|---|---|
-| Normal | pooled rule calm; P_S = weekly entry hazard | entry model applies outside phases | S1 band 80-100% equity; ES cap 2% | Common restructuring if feasible |
-| Stress, pre-lock | pooled rule fires | short system votes | S2 bond band 50-80%, cash residual | Common restructuring until the lock |
-| Short confirmed | state persists | last-short flag valid, max 18 months | lock active; band allocator withdrawn | Restructuring prohibited (maintain) |
-| Awaiting bottom | state persists | bottom gates unmet | lock maintained; pre-bottom supplement allowed | Maintain the lock |
-| Bottom confirmed | state persists | F1-F3: two of three agree; all four gates pass | equity 100%; ES cap bypassed in S3 | Bottom-specific restructuring |
-| Exit / post-exit | state updated | p_exit >= 0.027174 | S4 band 50-100% equity, bonds 0-25% | Common mechanism resumes |
+| Normal | pooled rule calm | P_S = weekly hazard of the H6 quarterly pre-onset probability | equity band 80-100% | equity 80-100%, bonds 0-20%, cash residual |
+| Last short | state persists | five-vote short system fires; P_N = 1 - P_S | lock: band allocator withdrawn | bonds 50-80%, no equity, restructuring prohibited |
+| Bottom | state persists | gates P_N >= 0.995, P_S <= 0.02, z >= 2, drawdown <= 5%; F1-F3 two of three | ES cap bypassed in S3 | equity 100%, profit ladder active |
+| Post-bottom | state updated | exit 3M p >= 0.027174 or ladder complete | S4 band | equity 50-100%, bonds 0-25%; 26 normal weeks re-arm the cycle |
 
 **Chronology check.** Measured on the executed ledger, the realised equity trough arrived between 0 and 20 weeks after
 the model's bottom confirmation across the seven episodes; in 2007-09 and 2022 the confirmation preceded the trough by

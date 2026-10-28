@@ -72,8 +72,8 @@ Peak, trough and recovery are phase classifications in the executed code, not pr
 
 | Parameter / Rule | Selected value | Unit | Activation condition | Interpretation |
 |---|---|---|---|---|
-| Normal state definition | pooled decision calm; P_N = 1 - P_S | probability | every issue in the RQ03 overlay | When the pooled rule is calm the overlay sets P_S to the weekly entry hazard 1-(1-p12)^(1/52), so P_N is the probability that stress does not start within the week |
-| Stress state definition | pooled decision fires; P_N = weekly exit hazard | probability | every issue in the RQ03 overlay | When the pooled rule fires the overlay sets P_N to the weekly exit hazard 1-(1-p_exit)^(1/13), so P_S is the probability that the episode continues; P_N and P_S are complementary by construction |
+| Normal state definition | pooled decision calm; P_N = 1 - P_S | probability | every issue in the RQ03 overlay | When the pooled rule is calm, P_S is the weekly hazard of the H6 quarterly pre-onset probability 1-(1-p_H6)^(1/78), so P_N is the probability that stress does not start within the week. The published pre-onset choice is H6 quarterly (18-month model); the shipped overlay script reads its H12 column, which is disclosed in the audit (D15). |
+| Stress state definition | pooled decision fires; P_N = weekly exit hazard | probability | every issue in the RQ03 overlay | When the pooled rule fires, P_N is the weekly exit hazard of the 3-month exit probability 1-(1-p_3M)^(1/13), so P_S is the probability that the episode continues; P_N and P_S are complementary by construction |
 | Peak percentile p_E | 0.90 | quantile | phase classification | Peak branch requires a rise above this quantile of the normal-state reference |
 | Peak percentile p_P | 0.75 | quantile | phase classification | Peak level test |
 | De-escalation percentile p_D | 0.50 | quantile | phase classification | Falling below the median marks de-escalation |
@@ -252,7 +252,7 @@ Each RQ03 row above carries one of the following classes, reported separately so
 | Calculated | derived quantity, not a parameter | 1 |
 
 ### Threshold completeness audit
-130 rows are published: 62 traced to a code line, 68 traced to a selected-configuration file, 0 unverified. Status counts: 124 active, 3 inert, 2 not implemented or not available.
+130 rows are published: 60 traced to a code line, 70 traced to a selected-configuration file, 0 unverified. Status counts: 124 active, 3 inert, 2 not implemented or not available.
 | Id | Area | Severity | Finding | Action |
 |---|---|---|---|---|
 | D1 | RQ03 | high | The executed allocation engine (W16_S4BOT_Z2) is not part of this repository. The overlay module points to an owner hand-off tree, so the RQ03 numbers are traceable to the selected configuration dump and to the executed ledger columns, not to shipped source. | Ship the engine with the next release, or treat the parameter table as the authoritative record. |
@@ -268,4 +268,5 @@ Each RQ03 row above carries one of the following classes, reported separately so
 | D11 | RQ01 | high | Peak, Trough and Recovery are phase classifications (percentile, quorum, persistence), not probabilities. No probability threshold exists for them and the three are not a distribution. | Describe them as phases; do not report a peak or recovery probability. |
 | D12 | RQ02 | high | The registered entry point (M11, 0.111821) and exit point (0.027174) are echoed by the loader but are not consumed by the executed RQ02 path, which selects its own thresholds under FNR/FPR constraints. | Label the registered points as reported operating points and show the executed rule beside them. |
 | D13 | RQ02 | medium | Exit-B is implemented but its specification bridge is never called; the run writes NOT_EVALUATED. | Report Exit-B as not evaluated rather than as a result. |
+| D15 | RQ02/RQ03 | medium | The stated pre-onset choice is the H6 quarterly model (18 months), but the shipped RQ03 overlay script reads its H12 column when rebuilding Pn/Ps. The public presentation uses H6 quarterly per the owner's choice; the script line is recorded here so the two are never silently merged. | Align the overlay column with the stated choice or document the divergence in the next release. |
 | D14 | RQ02 | medium | The module rev363/rq02_next.py raises PermissionError before any computation, so the published RQ02 numbers must come from rev363/rq02.py. | Remove the blocked module or mark it as a guard. |

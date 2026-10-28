@@ -348,13 +348,13 @@ mid and small cap) and two bond groups (short and long maturity) plus a cash pro
 these six. Five independent benchmarks are constructed from the same universe with documented passive rules and are
 *not* subject to the Main Model's state machine or its lock:
 
-| Benchmark | Construction | Objective | Constraints and assumptions |
-|---|---|---|---|
-| EW | equal weight across the six assets | no reliance on any single estimate | long-only, fully invested, re-solved weekly |
-| IVOL | weights inversely proportional to realised volatility | risk scaling with one parameter | long-only simplex, weekly re-solve |
-| MVP | minimum-variance weights | minimise portfolio variance | long-only simplex, active-set solver |
-| ERC | equal risk contribution | equalise each asset's risk contribution | long-only simplex, Newton solver |
-| MaxDiv | maximum diversification | maximise the diversification ratio | long-only simplex, exact search |
+| Benchmark | Construction |
+|---|---|
+| EW | equal weight across the six assets |
+| IVOL | weights inversely proportional to realised volatility |
+| MVP | minimum-variance weights |
+| ERC | equal risk contribution |
+| MaxDiv | maximum diversification |
 
 A sixth reference, **100% equity**, holds the three equity indices equal-weighted with no bonds and no cash. It is the
 honest yardstick for a strategy whose average equity share is above 70%.
@@ -364,23 +364,21 @@ honest yardstick for a strategy whose average equity share is above 70%.
 The Main Model is not a static weighting rule with a filter on top. It is a four-state machine in which the *permission*
 to restructure changes with the state. The diagram below is the complete transition structure.
 
-**Restructuring Decision Flow - How RQ01, RQ02 and RQ03 Control Allocation**
+**Restructuring Cycle - Normal, Last Short, Bottom, Post-Bottom**
 
-![Restructuring Decision Flow - How RQ01, RQ02 and RQ03 Control Allocation](results/fig03_rq03_restructuring_flow.png)
+![Restructuring Cycle - Normal, Last Short, Bottom, Post-Bottom](results/fig03_rq03_restructuring_flow.png)
 
-**Interpretation.** Layer A carries the financial state: P_N and P_S are complementary by construction, equal to the weekly entry hazard in normal states and the weekly exit hazard in stress states. Layer B carries the transition clock: entry, the last-short flag, the lock, the bottom gates and exit. Layer C carries the risk and weight constraints. The engine applies them in order, so a favourable signal produces no trade while the lock is active or when the risk caps make the target infeasible.
+**Interpretation.** RQ01 identifies the state, RQ02 supplies Pn and Ps from the H6 quarterly pre-onset model and the 3-month exit model, and RQ03 applies the risk cap, volatility and z-score constraints. The portfolio is locked between last short and bottom confirmation, so a favourable signal produces no trade while the lock is active.
 
 **Limitation.** Bottom confirmation does not guarantee a positive return. Across the seven episodes the realised equity trough arrived 0 to 20 weeks after the model's confirmation date, so the confirmation is a state change, not a timing signal.
 
 
-| Restructuring state | RQ01 inputs | RQ02 inputs | RQ03 conditions | Permitted action |
+| Phase | RQ01 | RQ02 | RQ03 | Allocation |
 |---|---|---|---|---|
-| Normal | pooled rule calm; P_S = weekly entry hazard | entry model applies outside phases | S1 band 80-100% equity; ES cap 2% | Common restructuring if feasible |
-| Stress, pre-lock | pooled rule fires | short system votes | S2 bond band 50-80%, cash residual | Common restructuring until the lock |
-| Short confirmed | state persists | last-short flag valid, max 18 months | lock active; band allocator withdrawn | Restructuring prohibited (maintain) |
-| Awaiting bottom | state persists | bottom gates unmet | lock maintained; pre-bottom supplement allowed | Maintain the lock |
-| Bottom confirmed | state persists | F1-F3: two of three agree; all four gates pass | equity 100%; ES cap bypassed in S3 | Bottom-specific restructuring |
-| Exit / post-exit | state updated | p_exit >= 0.027174 | S4 band 50-100% equity, bonds 0-25% | Common mechanism resumes |
+| Normal | pooled rule calm | P_S = weekly hazard of the H6 quarterly pre-onset probability | equity band 80-100% | equity 80-100%, bonds 0-20%, cash residual |
+| Last short | state persists | five-vote short system fires; P_N = 1 - P_S | lock: band allocator withdrawn | bonds 50-80%, no equity, restructuring prohibited |
+| Bottom | state persists | gates P_N >= 0.995, P_S <= 0.02, z >= 2, drawdown <= 5%; F1-F3 two of three | ES cap bypassed in S3 | equity 100%, profit ladder active |
+| Post-bottom | state updated | exit 3M p >= 0.027174 or ladder complete | S4 band | equity 50-100%, bonds 0-25%; 26 normal weeks re-arm the cycle |
 
 **Chronology check.** Measured on the executed ledger, the realised equity trough arrived between 0 and 20 weeks after
 the model's bottom confirmation across the seven episodes; in 2007-09 and 2022 the confirmation preceded the trough by
@@ -686,8 +684,8 @@ Peak, trough and recovery are phase classifications in the executed code, not pr
 
 | Parameter / Rule | Selected value | Unit | Activation condition | Interpretation |
 |---|---|---|---|---|
-| Normal state definition | pooled decision calm; P_N = 1 - P_S | probability | every issue in the RQ03 overlay | When the pooled rule is calm the overlay sets P_S to the weekly entry hazard 1-(1-p12)^(1/52), so P_N is the probability that stress does not start within the week |
-| Stress state definition | pooled decision fires; P_N = weekly exit hazard | probability | every issue in the RQ03 overlay | When the pooled rule fires the overlay sets P_N to the weekly exit hazard 1-(1-p_exit)^(1/13), so P_S is the probability that the episode continues; P_N and P_S are complementary by construction |
+| Normal state definition | pooled decision calm; P_N = 1 - P_S | probability | every issue in the RQ03 overlay | When the pooled rule is calm, P_S is the weekly hazard of the H6 quarterly pre-onset probability 1-(1-p_H6)^(1/78), so P_N is the probability that stress does not start within the week. The published pre-onset choice is H6 quarterly (18-month model); the shipped overlay script reads its H12 column, which is disclosed in the audit (D15). |
+| Stress state definition | pooled decision fires; P_N = weekly exit hazard | probability | every issue in the RQ03 overlay | When the pooled rule fires, P_N is the weekly exit hazard of the 3-month exit probability 1-(1-p_3M)^(1/13), so P_S is the probability that the episode continues; P_N and P_S are complementary by construction |
 | Peak percentile p_E | 0.90 | quantile | phase classification | Peak branch requires a rise above this quantile of the normal-state reference |
 | Peak percentile p_P | 0.75 | quantile | phase classification | Peak level test |
 | De-escalation percentile p_D | 0.50 | quantile | phase classification | Falling below the median marks de-escalation |
@@ -866,7 +864,7 @@ Each RQ03 row above carries one of the following classes, reported separately so
 | Calculated | derived quantity, not a parameter | 1 |
 
 ### Threshold completeness audit
-130 rows are published: 62 traced to a code line, 68 traced to a selected-configuration file, 0 unverified. Status counts: 124 active, 3 inert, 2 not implemented or not available.
+130 rows are published: 60 traced to a code line, 70 traced to a selected-configuration file, 0 unverified. Status counts: 124 active, 3 inert, 2 not implemented or not available.
 | Id | Area | Severity | Finding | Action |
 |---|---|---|---|---|
 | D1 | RQ03 | high | The executed allocation engine (W16_S4BOT_Z2) is not part of this repository. The overlay module points to an owner hand-off tree, so the RQ03 numbers are traceable to the selected configuration dump and to the executed ledger columns, not to shipped source. | Ship the engine with the next release, or treat the parameter table as the authoritative record. |
@@ -882,5 +880,6 @@ Each RQ03 row above carries one of the following classes, reported separately so
 | D11 | RQ01 | high | Peak, Trough and Recovery are phase classifications (percentile, quorum, persistence), not probabilities. No probability threshold exists for them and the three are not a distribution. | Describe them as phases; do not report a peak or recovery probability. |
 | D12 | RQ02 | high | The registered entry point (M11, 0.111821) and exit point (0.027174) are echoed by the loader but are not consumed by the executed RQ02 path, which selects its own thresholds under FNR/FPR constraints. | Label the registered points as reported operating points and show the executed rule beside them. |
 | D13 | RQ02 | medium | Exit-B is implemented but its specification bridge is never called; the run writes NOT_EVALUATED. | Report Exit-B as not evaluated rather than as a result. |
+| D15 | RQ02/RQ03 | medium | The stated pre-onset choice is the H6 quarterly model (18 months), but the shipped RQ03 overlay script reads its H12 column when rebuilding Pn/Ps. The public presentation uses H6 quarterly per the owner's choice; the script line is recorded here so the two are never silently merged. | Align the overlay column with the stated choice or document the divergence in the next release. |
 | D14 | RQ02 | medium | The module rev363/rq02_next.py raises PermissionError before any computation, so the published RQ02 numbers must come from rev363/rq02.py. | Remove the blocked module or mark it as a guard. |
 

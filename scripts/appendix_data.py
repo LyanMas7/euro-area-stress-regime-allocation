@@ -102,13 +102,15 @@ A3 = [
 A5 = [
     _row("RQ01", "A.5", "Normal state definition", "pooled decision calm; P_N = 1 - P_S", "probability",
      "every issue in the RQ03 overlay",
-     "When the pooled rule is calm the overlay sets P_S to the weekly entry hazard 1-(1-p12)^(1/52), so P_N is the "
-     "probability that stress does not start within the week", "RAW_CODE/rq03_standard/overlay_rq02_exit3_approved.py:80"),
+     "When the pooled rule is calm, P_S is the weekly hazard of the H6 quarterly pre-onset probability "
+     "1-(1-p_H6)^(1/78), so P_N is the probability that stress does not start within the week. The published "
+     "pre-onset choice is H6 quarterly (18-month model); the shipped overlay script reads its H12 column, which is "
+     "disclosed in the audit (D15).", "THRESHOLD/RQ02/rq02_selected.json"),
 _row("RQ01", "A.5", "Stress state definition", "pooled decision fires; P_N = weekly exit hazard", "probability",
      "every issue in the RQ03 overlay",
-     "When the pooled rule fires the overlay sets P_N to the weekly exit hazard 1-(1-p_exit)^(1/13), so P_S is the "
-     "probability that the episode continues; P_N and P_S are complementary by construction",
-     "RAW_CODE/rq03_standard/overlay_rq02_exit3_approved.py:74"),
+     "When the pooled rule fires, P_N is the weekly exit hazard of the 3-month exit probability 1-(1-p_3M)^(1/13), "
+     "so P_S is the probability that the episode continues; P_N and P_S are complementary by construction",
+     "THRESHOLD/RQ02/rq02_selected.json"),
 _row("RQ01", "A.5", "Peak percentile p_E", "0.90", "quantile", "phase classification",
          "Peak branch requires a rise above this quantile of the normal-state reference",
          "RAW_CODE/rev363/ijp_phase.py:30"),
@@ -323,6 +325,12 @@ DISCREPANCIES = [
      "finding": "Exit-B is implemented but its specification bridge is never called; the run writes NOT_EVALUATED.",
      "evidence": "RAW_CODE/rev363/rq02.py:670",
      "action": "Report Exit-B as not evaluated rather than as a result."},
+    {"id": "D15", "severity": "medium", "area": "RQ02/RQ03",
+     "finding": "The stated pre-onset choice is the H6 quarterly model (18 months), but the shipped RQ03 overlay "
+                "script reads its H12 column when rebuilding Pn/Ps. The public presentation uses H6 quarterly per "
+                "the owner's choice; the script line is recorded here so the two are never silently merged.",
+     "evidence": "RAW_CODE/rq03_standard/overlay_rq02_exit3_approved.py (H12_COL usage)",
+     "action": "Align the overlay column with the stated choice or document the divergence in the next release."},
     {"id": "D14", "severity": "medium", "area": "RQ02",
      "finding": "The module rev363/rq02_next.py raises PermissionError before any computation, so the published RQ02 "
                 "numbers must come from rev363/rq02.py.",
