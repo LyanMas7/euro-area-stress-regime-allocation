@@ -1,0 +1,4 @@
+﻿variant,order,TP,FN,FP,TN,FNR,FPR,alarms
+Individual only (per-country threshold on the pooled score),1,394,24,120,680,5.74,15.0,514
+Individual + Joint (pair OR),2,397,21,200,600,5.02,25.0,597
+"Pool (pair OR, excluded by the negative pair)",3,376,42,194,606,10.05,24.25,570

@@ -30,7 +30,7 @@ PHASE_BAND = {"ACTIVE_PRE_SHORT": "normal", "FROZEN_SHORT_TO_BOTTOM": "to_bottom
 STRATS = ["EW", "IVOL", "MVP", "ERC", "MaxDiv"]
 COLOURS = {"POLICY": "#c00000", "EW": "#1f4e79", "IVOL": "#2e75b6", "MVP": "#70ad47",
            "ERC": "#7030a0", "MaxDiv": "#bf9000", "EQUITY100": "#404040"}
-LABELS = {"POLICY": "Main model (S4BOT standard)", "EW": "EW", "IVOL": "IVOL", "MVP": "MVP",
+LABELS = {"POLICY": "Main model", "EW": "EW", "IVOL": "IVOL", "MVP": "MVP",
           "ERC": "ERC", "MaxDiv": "MaxDiv", "EQUITY100": "100% equity"}
 
 
@@ -98,6 +98,7 @@ def rq01(project: Path, out: Path):
     ax[1].bar(["DEV", "OOS"], summary.FPR, 0.35, bottom=summary.FNR, label="FPR", color="#c00000")
     for i, r in summary.iterrows():
         ax[1].annotate(f"FNR {r.FNR:.2f}\nFPR {r.FPR:.2f}", (i, r.FNR + r.FPR), ha="center", va="bottom", fontsize=7)
+    ax[1].set_ylim(0, max(45, float((summary.FNR + summary.FPR).max()) * 1.28))
     ax[1].set_title("Pooled decision, DEV vs OOS"); ax[1].legend(fontsize=7); ax[1].grid(axis="y", alpha=0.25)
     fig.suptitle("RQ01 — threshold confirmation: FNR/FPR across the six phases and pooled", fontsize=11)
     fig.tight_layout(); fig.savefig(out / "fig_rq01_fnr_fpr.png", dpi=170); plt.close(fig)
@@ -201,11 +202,12 @@ def rq03(project: Path, ledger: Path, dataset: Path, out: Path):
         else:
             for s in STRATS:
                 v = float(tgt[s]); ax.axhline(v, color=COLOURS[s], lw=1.0, ls="--", alpha=0.85)
-                ax.annotate(f"{s} {v:.3f}", (led.week_end.iloc[-1], v), xytext=(4, 0),
-                            textcoords="offset points", fontsize=7, color=COLOURS[s], va="center")
-        ax.set_title(f"{period}: S4BOT standard NAV = {led.nav.iloc[-1]:.4f}"
-                     + (" (benchmarks weekly)" if period == "OOS" else " (benchmarks at terminal value)"))
+                ax.plot([], [], color=COLOURS[s], lw=1.0, ls="--", label=f"{LABELS[s]} ({v:.3f})")
+        ax.set_title(f"{period}: main model NAV = {led.nav.iloc[-1]:.4f}"
+                     + (" with five benchmarks (weekly) and 100% equity" if period == "OOS"
+                        else " and five benchmarks (terminal values in the legend)"))
         ax.set_ylabel("NAV (initial capital = 1.0)"); ax.set_ylim(0, ymax); ax.grid(alpha=0.25)
+        ax.margins(x=0.06)
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y")); ax.legend(fontsize=7, ncol=4, loc="upper left")
         row = {"period": period, "weeks": len(led), "POLICY": float(led.nav.iloc[-1])}
         row.update({s: float(tgt[s]) for s in STRATS})
@@ -213,9 +215,11 @@ def rq03(project: Path, ledger: Path, dataset: Path, out: Path):
         for k, _, _ in BANDS: row[f"weeks_{k}"] = int((band == k).sum())
         rows.append(row)
     handles = [plt.Rectangle((0, 0), 1, 1, color=c) for _, c, _ in BANDS]
-    axes[0].legend(handles=handles, labels=[v for _, _, v in BANDS], fontsize=7, loc="lower right", title="Lifecycle stage")
-    fig.suptitle("RQ03 — main model NAV versus five benchmarks and 100% equity, DEV and OOS", fontsize=12)
-    fig.tight_layout(); fig.savefig(out / "fig_rq03_nav_dev_oos.png", dpi=170); plt.close(fig)
+    fig.suptitle("Main model NAV versus five benchmarks and 100% equity, split by lifecycle stage", fontsize=12)
+    fig.tight_layout(rect=(0, 0.05, 1, 0.95))
+    fig.legend(handles=handles, labels=[v for _, _, v in BANDS], fontsize=8.5, ncol=4,
+               loc="lower center", frameon=False)
+    fig.savefig(out / "fig_rq03_nav_dev_oos.png", dpi=170, bbox_inches="tight"); plt.close(fig)
 
     t = pd.DataFrame(rows)
     t.to_csv(out / "rq03_nav_terminal.csv", index=False, encoding="utf-8-sig")
@@ -226,6 +230,7 @@ def rq03(project: Path, ledger: Path, dataset: Path, out: Path):
         r = t[t.period == period].iloc[0]
         vals = [r.get(n, np.nan) for n in names]
         ax.bar([LABELS[n] for n in names], vals, color=[COLOURS[n] for n in names])
+        ax.set_ylim(0, max(v for v in vals if not np.isnan(v)) * 1.18)
         for i, v in enumerate(vals):
             if not np.isnan(v): ax.annotate(f"{v:.3f}", (i, v), ha="center", va="bottom", fontsize=7)
         ax.set_title(f"{period}: terminal NAV"); ax.grid(axis="y", alpha=0.25)

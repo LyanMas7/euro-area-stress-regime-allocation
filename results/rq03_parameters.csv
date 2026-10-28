@@ -1,0 +1,45 @@
+﻿Parameter / Threshold,Actual Value,Unit,Activation Condition,Effect on Portfolio,Class
+Allocation engine,four-state state-and-cycle allocator,—,always,"State-and-cycle allocator: four states, each with its own weight rule",Fixed assumption
+Normal-state equity target,0.9,share of NAV,"state S1 (no lock, no bottom)",Sets the core equity weight; the rest of S1 is bonds,Calibrated
+Normal-state bond target,0.1,share of NAV,state S1,Bond sleeve B1/B2 split equally; cash is the residual,Calibrated
+Lock-state bond share (base),0.65,share of NAV,"state S2 (short confirmed, bottom not yet confirmed)",Bond share of the locked portfolio at neutral probabilities,Calibrated
+Lock-state stress tilt,0.1,share per unit of P_S,state S2,"Raises the bond share as the stress probability rises, inside a 50–80% band",Calibrated
+Pre-bottom residual split,pro-rata,rule,state S2 when the pre-bottom supplement is active,Residual after equity is split pro-rata between bonds and cash (65% to bonds),Fixed assumption
+Pre-bottom window,26,weeks,state S2 supplement active,Caps how long the early-equity supplement may stay on,Calibrated
+Pre-bottom cooldown,4,weeks,after a pre-bottom exit,Blocks immediate re-entry into the supplement,Calibrated
+Pre-bottom stop,0.1,return,supplement active,Cuts the supplement when its own equity basket falls by this much,Calibrated
+Bottom confirmation: normal probability,0.995,probability,state S2,One of the four gates that must all hold before bottom equity is deployed,Calibrated
+Bottom confirmation: stress probability,0.02,probability,state S2,Stress must have collapsed to this level,Calibrated
+Bottom confirmation: volatility z-score,2,standard deviations,state S2,Deep-drawdown regime required before full equity is bought,Calibrated
+Bottom confirmation: drawdown tolerance,0.05,return,state S2,Maximum remaining distance to the running peak accepted at confirmation,Calibrated
+Bottom-state equity target,1,share of NAV,state S3 (bottom confirmed),Moves the portfolio to a fully invested equity position,Calibrated
+Recovery equity cap,0.8,share of NAV,post-bottom recovery path,Intermediate equity level when the cycle has not been reset,Calibrated
+Recovery normal-probability gate,0.98,probability,recovery path,Normal probability required to leave the recovery allocation,Calibrated
+Recovery stress-probability gate,0.02,probability,recovery path,Stress probability required to leave the recovery allocation,Calibrated
+State S4 high-volatility response,bonds absorb the shock,rule,state S4 with elevated z,S4 absorbs the shock through bonds rather than cash,Fixed assumption
+Post-exit equity floor,0.5,share of NAV,states S4,Lowest equity weight the band can produce after a completed cycle,Calibrated
+Post-exit bond ceiling,0.25,share of NAV,states S4,Upper bound of the bond band in the post-exit state,Calibrated
+Volatility-z direction,risk-off,sign,states S1 and S4,Risk-off mapping: a higher volatility z-score lowers equity; no contrarian inversion is used,Fixed assumption
+Profit-taking ladder,+8% / 20%; +16% / 20%; +25% / 20%; +40% / 20%,gain / share,bottom position held,"Four trim steps of 20% each at +8%, +16%, +25% and +40%",Calibrated
+Tranche cooldown,4,weeks,between two trims,Prevents trimming twice in consecutive weeks,Calibrated
+Minimum holding after the bottom,52,weeks,bottom position held,Keeps the bottom exposure for a full year before the ladder completes,Calibrated
+Profit trail,0.1,drawdown from peak,after the ladder,Closes the residual position when it retraces this far,Calibrated
+Runner activation,2,tranches completed,after the ladder,Number of completed trims after which a runner is kept,Calibrated
+Runner trail,0.15,drawdown from peak,runner active,Wider trail applied only to the runner,Calibrated
+Profit proceeds destination,on,rule,on every trim,"Proceeds go to cash, not to bonds",Fixed assumption
+Post-bottom equity cap,1,share of NAV,states S3/S4,Hard ceiling on equity once the bottom has been confirmed,Calibrated
+Post-bottom stop,0.1,return,states S3/S4,Stops the position if it falls this far from entry,Calibrated
+Pre-bottom stop,0.08,return,states S1/S2,General stop applied to the equity sleeve before the bottom,Calibrated
+Stop reference,equal-weight equity basket,rule,whenever a stop applies,"Stop is measured on the equal-weight equity basket, not on NAV",Fixed assumption
+Hard expected-shortfall cap,0.02,weekly return,every rebalance,Shrinks the target until the historical weekly ES is below the cap,Calibrated
+Pre-bottom ES overlay,—,rule,supplement active,NONE: the pre-bottom supplement is not additionally ES-constrained,Fixed assumption
+Bottom supplement switch,on,flag,states S2/S4,Enables the bottom-specific supplement that allows equity before confirmation,Calibrated
+Forced bottom entry,off,flag,state S2,Disabled; the bottom is only traded on confirmation,Fixed assumption
+Cycle reset window,26,weeks,after a completed cycle,Consecutive normal-state weeks required to re-arm the bottom supplement,Calibrated
+Cycle reset normal-probability,1.01,probability,after a completed cycle,"Set above 1, so the probability branch never triggers and the reset is inert",Fixed assumption
+Risk-tolerance scaling,off,flag,every rebalance,Disabled: the alpha/ES tolerance table is not applied to size,Fixed assumption
+Bottom trigger rule,first confirmed bottom,rule,state S3,ANY: the first confirmed bottom starts the bottom state,Fixed assumption
+Bottom lookback,0,weeks,state S3,Zero: the tail trigger uses the whole available history,Fixed assumption
+Bottom ES bypass,on,flag,state S3,The hard ES cap is not applied inside the bottom state,Fixed assumption
+Lock-state bond band,50 – 80,share of NAV,state S2,Bond share is clamped to 50–80%; the complement is cash,Calculated
+Transaction cost,10,basis points,on every traded notional,One-way cost charged on realised turnover,Fixed assumption
