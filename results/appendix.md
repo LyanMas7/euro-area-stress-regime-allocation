@@ -220,6 +220,18 @@ State targets, gates, the profit ladder and the cycle reset.
 | Cycle reset normal-probability | 1.01 | probability | after a completed cycle | Set above 1, so the probability branch never triggers and the reset is inert |
 | Bottom lookback | 0 | weeks | state S3 | Zero: the tail trigger uses the whole available history |
 
+#### C.4 Full-period capital allocation and regime timeline
+
+Across the 1041 weeks of the full period the policy spends 34 weeks in the normal state, 783 under the lock, 103 at the bottom across 7 bottom episodes, and 121 in the exit states, grouped into 5 lock-to-exit cycles. The dates below are model-issued confirmation dates: the price events behind them are observed, while the dates are decisions. The aligned six-asset chart is the exhibit 'Six-Asset Capital Allocation, 2005-2024' in the RQ03 section.
+
+| Episode | Short confirmed (model date) | Bottom confirmed (model date) | Exit recorded | Weeks locked and at the bottom |
+|---|---|---|---|---|
+| 1 | 2005-06-10 | 2007-11-09 | 2008-06-06 | 157 |
+| 2 | 2009-07-10 | 2011-09-09 | 2011-10-07 | 118 |
+| 3 | 2012-04-06 | 2013-10-11 | 2013-11-08 | 84 |
+| 4 | 2014-09-05 | 2020-06-05 | 2020-07-10 | 306 |
+| 5 | 2020-11-06 | 2023-02-10 | 2023-03-10 | 123 |
+
 ### Threshold completeness audit
 128 rows are published: 60 traced to a code line, 68 traced to a selected-configuration file, 0 unverified. Status counts: 122 active, 3 inert, 2 not implemented or not available.
 | Id | Area | Severity | Finding | Action |

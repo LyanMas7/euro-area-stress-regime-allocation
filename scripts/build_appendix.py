@@ -127,6 +127,60 @@ def benchmark_rows() -> list[dict]:
     return out
 
 
+NL = chr(10)
+
+
+def c4_table(ledger: Path):
+    """Episode table: model-issued confirmation dates inside the observed sequence."""
+    d = pd.read_csv(ledger, parse_dates=["week_end"]).sort_values("week_end").reset_index(drop=True)
+    code = {"ACTIVE_PRE_SHORT": 1, "FROZEN_SHORT_TO_BOTTOM": 2, "BOTTOM_CONFIRMED_ACTIVE": 3,
+            "EXIT_ACTIVE": 4, "POST_EXIT_ACTIVE": 4}
+    st = d["phase"].map(code).fillna(1).astype(int)
+    eps, start, prev = [], 0, st.iloc[0]
+    for i in range(1, len(st)):
+        if st.iloc[i] != prev:
+            eps.append((prev, start, i - 1))
+            start, prev = i, st.iloc[i]
+    eps.append((prev, start, len(st) - 1))
+    cycles, cur = [], {}
+    for state, a, b in eps:
+        if state == 2 and not cur:
+            cur = {"s2": d.week_end.iloc[a]}
+        elif state == 3 and cur:
+            cur["s3"] = d.week_end.iloc[a]
+            cur["s3_end"] = d.week_end.iloc[b]
+        elif state == 4 and cur.get("s3"):
+            cur["s4"] = d.week_end.iloc[a]
+            cycles.append(cur)
+            cur = {}
+    rows = []
+    for k, c in enumerate(cycles, 1):
+        weeks = int(((c.get("s4", c["s3_end"]) - c["s2"]).days // 7) + 1)
+        rows.append((k, c["s2"].date().isoformat(), c["s3"].date().isoformat(),
+                     c.get("s4", c["s3_end"]).date().isoformat(), weeks))
+    head = ("| Episode | Short confirmed (model date) | Bottom confirmed (model date) | Exit recorded "
+            "| Weeks locked and at the bottom |")
+    lines = [head, "|---|---|---|---|---|"]
+    lines += [f"| {r[0]} | {r[1]} | {r[2]} | {r[3]} | {r[4]} |" for r in rows]
+    html = ('<div class="tablewrap"><table class="thr"><thead><tr><th>Episode</th>'
+            '<th>Short confirmed (model date)</th><th>Bottom confirmed (model date)</th><th>Exit recorded</th>'
+            '<th>Weeks locked and at the bottom</th></tr></thead><tbody>')
+    for r in rows:
+        html += (f'<tr><td>{r[0]}</td><td class="num">{r[1]}</td><td class="num">{r[2]}</td>'
+                 f'<td class="num">{r[3]}</td><td>{r[4]}</td></tr>')
+    html += "</tbody></table></div>"
+    counts = d["phase"].value_counts()
+    bottom_runs = sum(1 for i in range(1, len(st)) if st.iloc[i] == 3 and st.iloc[i - 1] != 3)
+    bottom_runs += 1 if st.iloc[0] == 3 else 0
+    note = (f"Across the {len(d)} weeks of the full period the policy spends "
+            f"{int(counts.get('ACTIVE_PRE_SHORT', 0))} weeks in the normal state, "
+            f"{int(counts.get('FROZEN_SHORT_TO_BOTTOM', 0))} under the lock, "
+            f"{int(counts.get('BOTTOM_CONFIRMED_ACTIVE', 0))} at the bottom across {bottom_runs} bottom episodes, and "
+            f"{int(counts.get('EXIT_ACTIVE', 0) + counts.get('POST_EXIT_ACTIVE', 0))} in the exit states, grouped into "
+            f"{len(rows)} lock-to-exit cycles.")
+    return NL.join(lines), html, note
+
+
 def verify(rows: list[dict], repo: Path) -> list[dict]:
     out = []
     for r in rows:
@@ -203,7 +257,16 @@ def main() -> None:
             md_out.append(f"\n#### {title}\n\n{blurb}\n\n{md(part)}")
             html_out.append(f"<h4>{title}</h4><p>{blurb}</p>{html_rows(part)}")
 
-    md_out.append("\n### Threshold completeness audit\n")
+    cm, ch, cnote = c4_table(R / "results/rq03_standard/CHOSEN_STANDARD_LEDGER_FULL.csv")
+    md_out.append(NL + "#### C.4 Full-period capital allocation and regime timeline" + NL + NL + cnote +
+                  " The dates below are model-issued confirmation dates: the price events behind them are observed, "
+                  "while the dates are decisions. The aligned six-asset chart is the exhibit 'Six-Asset Capital "
+                  "Allocation, 2005-2024' in the RQ03 section." + NL + NL + cm + NL)
+    html_out.append("<h4>C.4 Full-period capital allocation and regime timeline</h4><p>" + cnote +
+                    " The dates are model-issued confirmations; the price events behind them are observed, the dates "
+                    "are decisions. The aligned six-asset chart is the exhibit 'Six-Asset Capital Allocation, "
+                    "2005-2024' in the RQ03 section.</p>" + ch)
+    md_out.append(NL + "### Threshold completeness audit" + NL)
     md_out.append(f"{summary['rows']} rows are published: {summary['verified_code_rows']} traced to a code line, "
                   f"{summary['selected_configuration_rows']} traced to a selected-configuration file, "
                   f"{summary['unverified']} unverified. Status counts: {summary['active']} active, "
