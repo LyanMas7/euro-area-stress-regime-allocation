@@ -1,0 +1,23 @@
+{
+  "rq": "RQ03",
+  "version": "RQ03_CHOSEN_STANDARD_20261027",
+  "status": "RESEARCH_ONLY / NOT_PRODUCTION",
+  "active_policy": "CHOSEN_STANDARD_S4BOT_Z2",
+  "fee_one_way": 0.001,
+  "chosen_standard": {
+    "DEV": 3.901464,
+    "OOS": 1.805925,
+    "FULL": 5.698119
+  },
+  "superseded_reference": {
+    "policy": "W16_S4BOT_Z2_E60",
+    "DEV": 3.9887,
+    "OOS": 1.8369,
+    "FULL": 5.754
+  },
+  "provenance": {
+    "fee": "rev363/config.py FEE_RESEARCH (10 bp one-way research assumption)",
+    "chosen_standard": "Threshold/Threshold/RQ03_NAV_20261027/02_NAV_CHUAN/",
+    "selected_on": "2026-10-27"
+  }
+}

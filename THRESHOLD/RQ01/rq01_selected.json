@@ -1,0 +1,50 @@
+{
+  "rq": "RQ01",
+  "version": "RQ01_PER_COUNTRY_NEAR_PASS_20261027",
+  "status": "RESEARCH_ONLY / OOS_INFORMED_EXPLORATORY / NOT_PRODUCTION",
+  "model": "XGBOOST_M01",
+  "operator": ">=",
+  "rule": "(Ps_XGB_M01 >= t_country) OR pkt_joint_CLIFS_VIX; AND NOT pkt_joint_DFC_GFC",
+  "thresholds": {
+    "BE": 0.0141416192054748,
+    "DE": 0.013771653175354,
+    "ES": 0.0361300110816955,
+    "FI": 0.0125994086265563,
+    "FR": 0.0060475468635559,
+    "IT": 0.0175201892852783,
+    "NL": 0.9851701250299812
+  },
+  "joint_features": {
+    "or": [
+      "pkt_joint_CLIFS_VIX"
+    ],
+    "not": [
+      "pkt_joint_DFC_GFC"
+    ]
+  },
+  "validation_target": {
+    "DEV": {
+      "n": 1218,
+      "TP": 376,
+      "FN": 42,
+      "FP": 194,
+      "TN": 606,
+      "FNR_pct": 10.05,
+      "FPR_pct": 24.25
+    },
+    "OOS": {
+      "n": 112,
+      "TP": 77,
+      "FN": 14,
+      "FP": 5,
+      "TN": 16,
+      "FNR_pct": 15.38,
+      "FPR_pct": 23.81
+    }
+  },
+  "provenance": {
+    "source_file": "Threshold\\Threshold\\THRESHOLD_RQ01_RQ02_20261027\\01_FINAL_SELECTION\\RQ01_PER_COUNTRY_NEAR_PASS.csv",
+    "register": "Threshold\\Threshold\\THRESHOLD_RQ01_RQ02_20261027\\01_FINAL_SELECTION\\THRESHOLD_REGISTER_RQ01_RQ02.csv",
+    "selected_on": "2026-10-27"
+  }
+}

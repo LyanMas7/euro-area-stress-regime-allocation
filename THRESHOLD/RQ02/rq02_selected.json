@@ -1,0 +1,79 @@
+{
+  "rq": "RQ02",
+  "version": "SELECTED_RQ02_M11_H6_20261027",
+  "status": "RESEARCH_ONLY / OOS_CONDITIONAL",
+  "entry": {
+    "model": "M11_LOGISTIC_L2_STRONG",
+    "horizon": "H6",
+    "horizon_months": 18,
+    "threshold": 0.111821,
+    "operator": ">=",
+    "validation_target": {
+      "DEV": {
+        "n": 653,
+        "TP": 108,
+        "FN": 0,
+        "FP": 130,
+        "TN": 415,
+        "FNR_pct": 0.0,
+        "FPR_pct": 23.85
+      },
+      "OOS": {
+        "n": 14,
+        "TP": 12,
+        "FN": 2,
+        "FNR_pct": 14.29,
+        "FPR": null
+      }
+    }
+  },
+  "exit": {
+    "model": "LOGISTIC_L2_STRONG_PLUS_DURATION",
+    "horizon_months": 3,
+    "threshold": 0.027174,
+    "operator": ">=",
+    "validation_target": {
+      "DEV": {
+        "n": 418,
+        "TP": 18,
+        "FN": 0,
+        "FP": 87,
+        "TN": 313,
+        "FNR_pct": 0.0,
+        "FPR_pct": 21.75
+      },
+      "OOS": {
+        "n": 91,
+        "TP": 15,
+        "FN": 6,
+        "FP": 32,
+        "TN": 38,
+        "FNR_pct": 28.57,
+        "FPR_pct": 45.71
+      }
+    }
+  },
+  "horizon_register": {
+    "H15": 0.3196694994575123,
+    "H12": 0.2214215326280583,
+    "H10": 0.2166420964185038,
+    "H8": 0.1883593300131536,
+    "H6": 0.1594707667685234
+  },
+  "s5_short_votes": {
+    "n_votes": 5,
+    "exact_onset": {
+      "DEV": "4/6",
+      "OOS": "4/7"
+    },
+    "before_or_at_onset": {
+      "DEV": "6/6",
+      "OOS": "7/7"
+    }
+  },
+  "provenance": {
+    "entry_source": "Threshold/.../SELECTED_RQ02_M11_H6.json (owner directive)",
+    "horizon_register_source": "Threshold\\Threshold\\THRESHOLD_RQ01_RQ02_20261027\\01_FINAL_SELECTION\\THRESHOLD_REGISTER_RQ01_RQ02.csv",
+    "selected_on": "2026-10-27"
+  }
+}
