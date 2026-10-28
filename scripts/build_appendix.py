@@ -35,9 +35,11 @@ SECTION_TITLES = {
             "RQ02 reuses the RQ01 joint specification, with the same EXACT(0,0) publication lag."),
     "B.3": ("B.3 Pool and short-system thresholds",
             "The five-vote short system and the last-short flag that feeds the allocation stage."),
-    "B.4": ("B.4 Entry and exit forecasting thresholds",
+    "B.4": ("B.4 Entry forecasting thresholds",
             "Registered operating points are reported next to the selection rule the executed path actually uses."),
-    "B.5": ("B.5 Asset-price bottom thresholds",
+    "B.5": ("B.5 Exit forecasting thresholds",
+            "Registered and executed exit operating points, including Exit-A and Exit-B."),
+    "B.6": ("B.6 Asset-price bottom thresholds",
             "Three independent factors, a two-of-three vote and an ex-post truth window."),
     "C.1": ("C.1 Main model risk thresholds",
             "Tail limits, feasibility and trading assumptions of the executed policy."),
@@ -266,6 +268,15 @@ def main() -> None:
                     " The dates are model-issued confirmations; the price events behind them are observed, the dates "
                     "are decisions. The aligned six-asset chart is the exhibit 'Six-Asset Capital Allocation, "
                     "2005-2024' in the RQ03 section.</p>" + ch)
+    classes = pd.read_csv(R / "results/rq03_parameters.csv")["Class"].value_counts().to_dict()
+    class_md = "| Category | Meaning | Rows in the register |\n|---|---|---:|\n"
+    class_md += "| Fixed assumption | design choice, not fitted | " + str(classes.get("Fixed assumption", 0)) + " |\n"
+    class_md += "| Calibrated | selected on the development window | " + str(classes.get("Calibrated", 0)) + " |\n"
+    class_md += "| Calculated | derived quantity, not a parameter | " + str(classes.get("Calculated", 0)) + " |\n"
+    md_out.append(NL + "#### C.5 Assumption classes" + NL + NL +
+                  "Each RQ03 row above carries one of the following classes, reported separately so that design "
+                  "choices are never presented as fitted parameters." + NL + NL + class_md)
+
     md_out.append(NL + "### Threshold completeness audit" + NL)
     md_out.append(f"{summary['rows']} rows are published: {summary['verified_code_rows']} traced to a code line, "
                   f"{summary['selected_configuration_rows']} traced to a selected-configuration file, "

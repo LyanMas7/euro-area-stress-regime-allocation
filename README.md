@@ -70,6 +70,43 @@ code is not an average but a sequence of set operations on a pooled score. For a
 The score is a boosted-tree probability of stress; the country threshold is the only country-specific parameter. Both
 pairs are binary packet flags produced by the Joint layer.
 
+The three layers below are representative illustrations; every numeric threshold is listed in Appendix A.
+
+**Individual Signal - Six-Month Observation Window**
+
+![Individual Signal - Six-Month Observation Window](results/fig_ijp01_rq01_individual.png)
+
+**Interpretation.** Seven monthly observations create up to 21 pairwise comparisons and one endpoint difference. A comparison confirms only when it is positive and reaches a magnitude cut, and the vote needs one strong movement or a weak movement backed by half of the comparisons.
+
+**Limitation.** The cuts are percentiles of each country's own prior deltas, so they carry no common unit across indicators.
+
+
+**Joint Signal - Two Synchronized Indicators**
+
+![Joint Signal - Two Synchronized Indicators](results/fig_ijp02_rq01_joint.png)
+
+**Interpretation.** Each member keeps its own magnitude cut; paired movements are counted on synchronized bases with no publication lag. The gates that select a pair are applied once; the activation gates run at every issue afterwards.
+
+**Limitation.** Insufficient data yields NOT_EVALUATED, never a calm vote.
+
+
+**Pool Integration - From Signals to a Stress Decision**
+
+![Pool Integration - From Signals to a Stress Decision](results/fig_ijp03_rq01_pool.png)
+
+**Interpretation.** The pool is not an average and not a vote: a boosted-tree probability is compared with the country threshold, one joint packet can only add stress and one can only remove it.
+
+**Limitation.** The removal packet can cancel stress raised by either other layer.
+
+
+| Signal | Observation window | Number of comparisons | Magnitude calculation | Activation requirement |
+|---|---|---:|---|---|
+| RQ01 Individual | six months | 7 observations, up to 21 pairs | endpoint difference D = sign x (last - first) | D >= Q75 strong; Q35 <= D < Q75 weak with count >= ceil(M / 2) |
+| RQ01 Joint | six months | synchronized bases only, EXACT L = 0 | each member against its own cut | Gate 1 (magnitudes) AND Gate 2 (counts) |
+| RQ02 Individual Short | H15 to H12, nine months | 10 monthly observations, max 45; 4 quarterly, max 6 | short endpoint differences | value >= cut AND z-score > 0 |
+| RQ02 Individual Long | H15, H12, H10, H8, H6 | 5 milestones, max 10 pairs | up to 4 endpoint differences | long cut with at least 12 prior values |
+| RQ02 Joint | applicable window | valid synchronized comparisons | both member magnitudes | joint conditions, Appendix B.2 |
+
 ### 2.2 Selected thresholds
 
 | Country | Selected threshold |
@@ -87,9 +124,9 @@ is almost always stressed needs a threshold close to one to separate its calm mo
 months needs a very low one. Using a single common threshold would either silence the low-stress countries or turn the
 high-stress ones permanently on.
 
-**Identification Error by Phase: Miss Rate Against False-Alarm Rate**
+**Financial Stress Identification - DEV vs OOS**
 
-![Identification Error by Phase: Miss Rate Against False-Alarm Rate](results/fig01_rq01_phase_error.png)
+![Financial Stress Identification - DEV vs OOS](results/fig01_rq01_phase_error.png)
 
 **Interpretation.** The rule is silent in the calm, entry and peak phases and pays for that silence in recovery, where 43.78% of calm months raise an alarm. Read the phases rather than the pooled line: the pooled 10.05% and 24.25% average a rule that is either perfectly quiet or strongly over-sensitive.
 
@@ -100,8 +137,8 @@ high-stress ones permanently on.
 
 | period | TP | FN | FP | TN | FNR | FPR |
 |---|---|---|---|---|---|---|
-| DEV | 376 | 42 | 194 | 606 | 10.05 | 24.25 |
-| OOS | 77 | 14 | 5 | 16 | 15.38 | 23.81 |
+| DEV | 376 | 42 | 194 | 606 | 10.05% | 24.25% |
+| OOS | 77 | 14 | 5 | 16 | 15.38% | 23.81% |
 
 
 **Key finding.** The pooled decision misclassifies one stressed month in ten and one calm month in four. Numerically 42
@@ -116,9 +153,9 @@ threshold gives a lower miss rate but a much higher false-alarm rate; removing t
 
 | variant | TP | FN | FP | TN | FNR | FPR | alarms |
 |---|---|---|---|---|---|---|---|
-| Individual only (per-country threshold on the pooled score) | 394 | 24 | 120 | 680 | 5.74 | 15.00 | 514 |
-| Individual + Joint (pair OR) | 397 | 21 | 200 | 600 | 5.02 | 25.00 | 597 |
-| Pool (pair OR, excluded by the negative pair) | 376 | 42 | 194 | 606 | 10.05 | 24.25 | 570 |
+| Individual only (per-country threshold on the pooled score) | 394 | 24 | 120 | 680 | 5.74% | 15.00% | 514 |
+| Individual + Joint (pair OR) | 397 | 21 | 200 | 600 | 5.02% | 25.00% | 597 |
+| Pool (pair OR, excluded by the negative pair) | 376 | 42 | 194 | 606 | 10.05% | 24.25% | 570 |
 
 
 The joint layer buys 0.72 percentage points of miss rate for 10.00 points of extra
@@ -128,13 +165,13 @@ miss rate. Reading the rule as "threshold plus two filters" is therefore more ac
 
 **By phase.** | phase_label | n | TP | FN | FP | TN | FNR | FPR |
 |---|---|---|---|---|---|---|---|
-| Pre-entry | 148 | 1 | 0 | 6 | 141 | 0.00 | 4.08 |
-| Entry | 44 | 6 | 0 | 7 | 31 | 0.00 | 18.42 |
-| Peak | 62 | 15 | 0 | 18 | 29 | 0.00 | 38.30 |
-| De-escalation | 86 | 31 | 5 | 14 | 36 | 13.89 | 28.00 |
-| Recovery | 429 | 210 | 18 | 88 | 113 | 7.89 | 43.78 |
-| Exit | 449 | 113 | 19 | 61 | 256 | 14.39 | 19.24 |
-| All phases | 1218 | 376 | 42 | 194 | 606 | 10.05 | 24.25 |
+| Pre-entry | 148 | 1 | 0 | 6 | 141 | 0.00% | 4.08% |
+| Entry | 44 | 6 | 0 | 7 | 31 | 0.00% | 18.42% |
+| Peak | 62 | 15 | 0 | 18 | 29 | 0.00% | 38.30% |
+| De-escalation | 86 | 31 | 5 | 14 | 36 | 13.89% | 28.00% |
+| Recovery | 429 | 210 | 18 | 88 | 113 | 7.89% | 43.78% |
+| Exit | 449 | 113 | 19 | 61 | 256 | 14.39% | 19.24% |
+| All phases | 1218 | 376 | 42 | 194 | 606 | 10.05% | 24.25% |
 
 The rule is conservative while the economy is calm or entering stress (no misses in the pre-entry, entry and peak
 phases) and pays for that in recovery, where four calm months in ten raise an alarm. In the exit phase the balance
@@ -148,8 +185,8 @@ machinery that the rule is scored against; the phase split is descriptive, not a
 
 | period | TP | FN | FP | TN | FNR | FPR |
 |---|---|---|---|---|---|---|
-| DEV | 376 | 42 | 194 | 606 | 10.05 | 24.25 |
-| OOS | 77 | 14 | 5 | 16 | 15.38 | 23.81 |
+| DEV | 376 | 42 | 194 | 606 | 10.05% | 24.25% |
+| OOS | 77 | 14 | 5 | 16 | 15.38% | 23.81% |
 
 
 **Key finding.** Out of sample the rule keeps its false-alarm rate (23.81% against 24.25%) but its miss
@@ -193,14 +230,41 @@ horizon: it answers whether stress is building. The **Short** system is a five-v
 system drives the exit and bottom models. Combining the two is what allows the same dataset to produce both a "stress is
 coming" signal and a "the turn is near" signal without confusing them.
 
+**RQ02 Short Signal - The H15 to H12 Observation Interval**
+
+![RQ02 Short Signal - The H15 to H12 Observation Interval](results/fig_ijp04_rq02_short.png)
+
+**Interpretation.** The representative short interval is the nine months between the 45-month and 36-month milestones. The comparison count depends on the indicator's frequency; the numbers shown are structural capacity, not confirmations.
+
+**Limitation.** The count is computed on eligible bases only.
+
+
+**RQ02 Long Signal - Progressive Milestones H15 to H6**
+
+![RQ02 Long Signal - Progressive Milestones H15 to H6](results/fig_ijp05_rq02_long.png)
+
+**Interpretation.** The long system accumulates confirmations at five milestones. Each later milestone adds information to an already-issued forecast; it never rewrites what an earlier issue would have seen.
+
+**Limitation.** Forecasts use data published by the issue date only.
+
+
+**RQ02 Joint Confirmation - Long and Short Pairs**
+
+![RQ02 Joint Confirmation - Long and Short Pairs](results/fig_ijp06_rq02_joint.png)
+
+**Interpretation.** Long pairs feed the entry pool; the short pair set feeds exit and the bottom factors. Paired bases are counted only when both members pass their own cuts and both are published before the issue.
+
+**Limitation.** A carried quarter is never counted twice.
+
+
 ### 3.3 Development window
 
 | task | period | threshold | n | TP | FN | FP | TN | FNR | FPR |
 |---|---|---|---|---|---|---|---|---|---|
-| ENTRY (18 months, logistic L2) | DEV | 0.111821 | 653 | 108 | 0 | 130.00 | 415.00 | 0.00 | 23.85 |
-| ENTRY (18 months, logistic L2) | OOS | 0.111821 | 14 | 12 | 2 | — | — | 14.29 | — |
-| EXIT (3 months) | DEV | 0.027174 | 418 | 18 | 0 | 87.00 | 313.00 | 0.00 | 21.75 |
-| EXIT (3 months) | OOS | 0.027174 | 91 | 15 | 6 | 32.00 | 38.00 | 28.57 | 45.71 |
+| ENTRY (18 months, logistic L2) | DEV | 0.111821 | 653 | 108 | 0 | 130 | 415 | 0.00% | 23.85% |
+| ENTRY (18 months, logistic L2) | OOS | 0.111821 | 14 | 12 | 2 | — | — | 14.29% | — |
+| EXIT (3 months) | DEV | 0.027174 | 418 | 18 | 0 | 87 | 313 | 0.00% | 21.75% |
+| EXIT (3 months) | OOS | 0.027174 | 91 | 15 | 6 | 32 | 38 | 28.57% | 45.71% |
 
 
 **Key finding.** Entry and exit are both perfect on the miss dimension in development — no episode is missed at the
@@ -222,10 +286,10 @@ portfolio-level test.
 
 | task | period | threshold | n | TP | FN | FP | TN | FNR | FPR |
 |---|---|---|---|---|---|---|---|---|---|
-| ENTRY (18 months, logistic L2) | DEV | 0.111821 | 653 | 108 | 0 | 130.00 | 415.00 | 0.00 | 23.85 |
-| ENTRY (18 months, logistic L2) | OOS | 0.111821 | 14 | 12 | 2 | — | — | 14.29 | — |
-| EXIT (3 months) | DEV | 0.027174 | 418 | 18 | 0 | 87.00 | 313.00 | 0.00 | 21.75 |
-| EXIT (3 months) | OOS | 0.027174 | 91 | 15 | 6 | 32.00 | 38.00 | 28.57 | 45.71 |
+| ENTRY (18 months, logistic L2) | DEV | 0.111821 | 653 | 108 | 0 | 130 | 415 | 0.00% | 23.85% |
+| ENTRY (18 months, logistic L2) | OOS | 0.111821 | 14 | 12 | 2 | — | — | 14.29% | — |
+| EXIT (3 months) | DEV | 0.027174 | 418 | 18 | 0 | 87 | 313 | 0.00% | 21.75% |
+| EXIT (3 months) | OOS | 0.027174 | 91 | 15 | 6 | 32 | 38 | 28.57% | 45.71% |
 
 
 **Key finding.** Entry keeps a low miss rate (14.29%) but its false-alarm rate cannot be defined: all
@@ -237,8 +301,8 @@ as 0.00% would make the exit model look perfect. The same applies to the bottom 
 
 | period | n_hit | n_issued_matured | hit_rate | forecast_coverage |
 |---|---|---|---|---|
-| DEV | 14 | 60 | 23.33 | 70.59 |
-| OOS | 6 | 90 | 6.67 | 94.74 |
+| DEV | 14 | 60 | 23.33% | 70.59% |
+| OOS | 6 | 90 | 6.67% | 94.74% |
 
 
 The out-of-sample bottom block is scored in the registered table: 6 of 90
@@ -249,14 +313,14 @@ reproducible operating points are:
 
 | variant | DEV_FNR | DEV_FPR | OOS_FNR | OOS_FPR | status |
 |---|---|---|---|---|---|
-| Selected operating point 0.111821 | 0.00 | 23.85 | 14.29 | — | SELECTED — tape not shipped |
-| reproducible reproducible logistic score at 0.191936 | 0.00 | 12.48 | 35.71 | — | REPRODUCIBLE from shipped registry |
-| reproducible reproducible logistic score at 0.244947 | 0.00 | 3.67 | 42.86 | — | REPRODUCIBLE from shipped registry |
+| Selected operating point 0.111821 | 0.00% | 23.85% | 14.29% | — | SELECTED — tape not shipped |
+| reproducible reproducible logistic score at 0.191936 | 0.00% | 12.48% | 35.71% | — | REPRODUCIBLE from shipped registry |
+| reproducible reproducible logistic score at 0.244947 | 0.00% | 3.67% | 42.86% | — | REPRODUCIBLE from shipped registry |
 
 
-**Forecasting Error for Entry and Exit, and the Asset-Bottom Hit Rate**
+**Entry and Exit Forecasting Performance**
 
-![Forecasting Error for Entry and Exit, and the Asset-Bottom Hit Rate](results/fig02_rq02_transition_error.png)
+![Entry and Exit Forecasting Performance](results/fig02_rq02_transition_error.png)
 
 **Interpretation.** Entry buys its low miss rate with false alarms in development and cannot be scored on false alarms out of sample, where all 14 observations are positives. Exit is the opposite: quiet in development, then 28.57% and 45.71% in evaluation. The bottom zone is weakest, keeping the trough inside the zone in about one forecast in four in development and one in fifteen in evaluation.
 
@@ -282,13 +346,13 @@ mid and small cap) and two bond groups (short and long maturity) plus a cash pro
 these six. Five independent benchmarks are constructed from the same universe with documented passive rules and are
 *not* subject to the Main Model's state machine or its lock:
 
-| Benchmark | Construction | Why it is in the comparison |
-|---|---|---|
-| EW | equal weight across the six assets | the naive portfolio; hard to beat after costs |
-| IVOL | weights inversely proportional to each asset's realised volatility | the simplest risk-scaling rule |
-| MVP | minimum-variance weights | the most defensive of the five |
-| ERC | equal risk contribution | risk parity without a return forecast |
-| MaxDiv | maximum diversification | the most equity-seeking of the five |
+| Benchmark | Construction | Objective | Constraints and assumptions |
+|---|---|---|---|
+| EW | equal weight across the six assets | no reliance on any single estimate | long-only, fully invested, re-solved weekly |
+| IVOL | weights inversely proportional to realised volatility | risk scaling with one parameter | long-only simplex, weekly re-solve |
+| MVP | minimum-variance weights | minimise portfolio variance | long-only simplex, active-set solver |
+| ERC | equal risk contribution | equalise each asset's risk contribution | long-only simplex, Newton solver |
+| MaxDiv | maximum diversification | maximise the diversification ratio | long-only simplex, exact search |
 
 A sixth reference, **100% equity**, holds the three equity indices equal-weighted with no bonds and no cash. It is the
 honest yardstick for a strategy whose average equity share is above 70%.
@@ -298,14 +362,28 @@ honest yardstick for a strategy whose average equity share is above 70%.
 The Main Model is not a static weighting rule with a filter on top. It is a four-state machine in which the *permission*
 to restructure changes with the state. The diagram below is the complete transition structure.
 
-**Restructuring States and the Allocation Rule Attached to Each State**
+**Restructuring Decision Flow - How RQ01, RQ02 and RQ03 Control Allocation**
 
-![Restructuring States and the Allocation Rule Attached to Each State](results/fig03_rq03_state_machine.png)
+![Restructuring Decision Flow - How RQ01, RQ02 and RQ03 Control Allocation](results/fig03_rq03_restructuring_flow.png)
 
-**Interpretation.** The diagram locates the lock precisely: between short confirmation and bottom confirmation the band allocator is withdrawn and only the lock rule applies, which is why the policy spends most of its life in a defensive posture and still holds equity when the bottom is confirmed.
+**Interpretation.** Layer A carries the financial state: P_N and P_S are complementary by construction, equal to the weekly entry hazard in normal states and the weekly exit hazard in stress states. Layer B carries the transition clock: entry, the last-short flag, the lock, the bottom gates and exit. Layer C carries the risk and weight constraints. The engine applies them in order, so a favourable signal produces no trade while the lock is active or when the risk caps make the target infeasible.
 
-**Limitation.** The boxes state the rules as executed; they do not carry parameter values, which are listed in the register below.
+**Limitation.** Bottom confirmation does not guarantee a positive return. Across the seven episodes the realised equity trough arrived 0 to 20 weeks after the model's confirmation date, so the confirmation is a state change, not a timing signal.
 
+
+| Restructuring state | RQ01 inputs | RQ02 inputs | RQ03 conditions | Permitted action |
+|---|---|---|---|---|
+| Normal | pooled rule calm; P_S = weekly entry hazard | entry model applies outside phases | S1 band 80-100% equity; ES cap 2% | Common restructuring if feasible |
+| Stress, pre-lock | pooled rule fires | short system votes | S2 bond band 50-80%, cash residual | Common restructuring until the lock |
+| Short confirmed | state persists | last-short flag valid, max 18 months | lock active; band allocator withdrawn | Restructuring prohibited (maintain) |
+| Awaiting bottom | state persists | bottom gates unmet | lock maintained; pre-bottom supplement allowed | Maintain the lock |
+| Bottom confirmed | state persists | F1-F3: two of three agree; all four gates pass | equity 100%; ES cap bypassed in S3 | Bottom-specific restructuring |
+| Exit / post-exit | state updated | p_exit >= 0.027174 | S4 band 50-100% equity, bonds 0-25% | Common mechanism resumes |
+
+**Chronology check.** Measured on the executed ledger, the realised equity trough arrived between 0 and 20 weeks after
+the model's bottom confirmation across the seven episodes; in 2007-09 and 2022 the confirmation preceded the trough by
+18 and 15 weeks. The restructuring lock has lasted between 18 and 300 weeks, and the 2014-2020 lock alone covered 300
+weeks. Confirmation dates are model-issued decisions; trough dates are retrospective market events.
 
 The four states are labelled **S1** (normal), **S2** (locked after short confirmation), **S3** (bottom confirmed) and
 **S4** (post-exit). These labels are used in the diagram and in the parameter register below.
@@ -355,9 +433,9 @@ the stop completes, the model passes through a post-exit state in which the band
 equity floor, and returns to the normal state once the phase clock leaves the exit phase. Twenty-six consecutive normal
 weeks re-arm the bottom supplement for a new cycle.
 
-**Portfolio Composition and Regime Evolution, 2005-2024**
+**Six-Asset Capital Allocation, 2005-2024**
 
-![Portfolio Composition and Regime Evolution, 2005-2024](results/fig04_rq03_allocation.png)
+![Six-Asset Capital Allocation, 2005-2024](results/fig04_rq03_allocation.png)
 
 **Interpretation.** The policy is equity-heavy by design: the three equity sleeves hold roughly three quarters of NAV for most of the period, cash reaches 100% in ten weeks only, and the regime band shows a cycle rather than a one-way de-risking. The lock is where most of the sample is spent, 783 of 1,041 weeks, so the mechanism is better described as a long defensive wait interrupted by short bottom states.
 
@@ -404,8 +482,8 @@ That is the price of the return premium, and it is paid continuously rather than
 
 **Where the return is made.** | period | avg_equity_pct | avg_bond_pct | avg_turnover_pct | total_cost_pct_nav |
 |---|---|---|---|---|
-| DEV | 72.60 | 10.94 | 7.80 | 4.09 |
-| OOS | 72.24 | 5.27 | 9.76 | 1.54 |
+| DEV | 72.60% | 10.94% | 7.80% | 4.09% |
+| OOS | 72.24% | 5.27% | 9.76% | 1.54% |
 
 The strategy carries an average equity share of 72.6% and pays
 4.09% of NAV in costs over fifteen years.
@@ -413,11 +491,11 @@ The strategy carries an average equity share of 72.6% and pays
 **By stage.**
 | Stage | weeks | avg_equity_pct | avg_bond_pct | avg_turnover_pct | total_cost_pct_nav |
 |---|---|---|---|---|---|
-| Normal, before short confirmation | 21 | 90.00 | 9.84 | 10.18 | 0.11 |
-| Bottom confirmed, profit ladder running | 77 | 79.85 | 10.81 | 12.17 | 0.59 |
-| Exit from the bottom position | 14 | 78.67 | 9.95 | 3.80 | 0.03 |
-| Locked, short confirmed, bottom pending | 596 | 70.38 | 11.12 | 6.61 | 2.78 |
-| Post-exit, band allocator restored | 73 | 76.91 | 10.13 | 13.07 | 0.58 |
+| Normal, before short confirmation | 21 | 90.00% | 9.84% | 10.18% | 0.11% |
+| Bottom confirmed, profit ladder running | 77 | 79.85% | 10.81% | 12.17% | 0.59% |
+| Exit from the bottom position | 14 | 78.67% | 9.95% | 3.80% | 0.03% |
+| Locked, short confirmed, bottom pending | 596 | 70.38% | 11.12% | 6.61% | 2.78% |
+| Post-exit, band allocator restored | 73 | 76.91% | 10.13% | 13.07% | 0.58% |
 
 
 **Limitation.** The development window contains the 2008 and 2011 episodes, which is exactly the environment the policy
@@ -454,9 +532,9 @@ time.
 objective is to minimise drawdown would reject it; an investor whose objective is terminal wealth subject to an
 acceptance of large interim losses would not.
 
-**Terminal Net Asset Value by Strategy and Window**
+**Terminal NAV by Strategy and Window**
 
-![Terminal Net Asset Value by Strategy and Window](results/fig06_rq03_terminal_nav.png)
+![Terminal NAV by Strategy and Window](results/fig06_rq03_terminal_nav.png)
 
 **Interpretation.** Terminal NAV ranks the main model first in both windows, with full equity second in both and the five passive rules left near one. The ordering does not flip between windows, which is the relevant test for a rule applied unchanged.
 

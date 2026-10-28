@@ -270,7 +270,9 @@ def fig04(dev: pd.DataFrame, oos: pd.DataFrame, eq: pd.DataFrame, term: pd.DataF
     row = term[term.period == "DEV"].iloc[0]
     for key, colour, ls, lw in BENCH:
         ax.axhline(float(row[key]), color=colour, linestyle=ls, linewidth=lw)
-    page.format_axis(ax, xlabel="", ylabel="NAV, initial capital = 1.0", ylim=(0.9, 4.15),
+    dev_lo = min(d.nav.astype(float).min(), (e.EQUITY100 / e.EQUITY100.iloc[0]).min())
+    page.format_axis(ax, xlabel="", ylabel="NAV, initial capital = 1.0",
+                     ylim=(float(np.floor(dev_lo * 10)) / 10, 4.15),
                      xticks=[pd.Timestamp(f"{y}-07-01") for y in (2006, 2009, 2012, 2015, 2018)],
                      xticklabels=[str(y) for y in (2006, 2009, 2012, 2015, 2018)])
     ax.text(0.004, 0.965, "(a) Development window, 2005-2019", transform=ax.transAxes, ha="left",
@@ -281,10 +283,18 @@ def fig04(dev: pd.DataFrame, oos: pd.DataFrame, eq: pd.DataFrame, term: pd.DataF
     ax2.plot(o.week_end, o.nav.astype(float), color=INK, linewidth=1.8)
     e2 = eq[(eq.week_end >= o.week_end.min()) & (eq.week_end <= o.week_end.max())]
     ax2.plot(e2.week_end, e2.EQUITY100 / e2.EQUITY100.iloc[0], color=GREY, linestyle=(0, (1.2, 1.8)), linewidth=0.9)
+    bench_vals = []
     for key, colour, ls, lw in BENCH:
         w = weekly[weekly.strategy == key].sort_values("week_end")
-        ax2.plot(w.week_end, w.nav_end / float(w.nav_end.iloc[0]), color=colour, linestyle=ls, linewidth=lw)
-    page.format_axis(ax2, xlabel="Year", ylabel="NAV, initial capital = 1.0", ylim=(0.9, 1.95),
+        series = w.nav_end / float(w.nav_end.iloc[0])
+        bench_vals.append(series)
+        ax2.plot(w.week_end, series, color=colour, linestyle=ls, linewidth=lw)
+    oos_all = np.concatenate([o.nav.astype(float).to_numpy(),
+                              (e2.EQUITY100 / e2.EQUITY100.iloc[0]).to_numpy()] +
+                             [v.to_numpy() for v in bench_vals])
+    lo = float(np.floor(np.nanmin(oos_all) * 20)) / 20
+    hi = float(np.ceil(np.nanmax(oos_all) * 20)) / 20 + 0.05
+    page.format_axis(ax2, xlabel="Year", ylabel="NAV, initial capital = 1.0", ylim=(lo, hi),
                      xticks=[pd.Timestamp(f"{y}-07-01") for y in (2020, 2021, 2022, 2023, 2024)],
                      xticklabels=[str(y) for y in (2020, 2021, 2022, 2023, 2024)])
     ax2.text(0.004, 0.965, "(b) Evaluation window, 2020-2024", transform=ax2.transAxes, ha="left",
@@ -398,7 +408,6 @@ def main() -> None:
           pd.read_csv(res / "rq03_standard/CHOSEN_STANDARD_LEDGER_OOS.csv"),
           _equity(D), pd.read_csv(res / "rq03_nav_terminal.csv"), weekly, res)
     fig05(pd.read_csv(res / "rq03_nav_terminal.csv"), res)
-    fig06(res)
 
 
 if __name__ == "__main__":
