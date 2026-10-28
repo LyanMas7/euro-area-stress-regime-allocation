@@ -1,23 +1,58 @@
 {
   "rq": "RQ03",
   "version": "RQ03_CHOSEN_STANDARD_20261027",
-  "status": "RESEARCH_ONLY / NOT_PRODUCTION",
-  "active_policy": "CHOSEN_STANDARD_S4BOT_Z2",
+  "status": "OWNER_SELECTED_RESEARCH / OOS_INFORMED / NO_PRODUCTION",
+  "active_policy": "W16_S4BOT_Z2 + H12 entry + EXIT-3m phase overlay",
+  "entry": {
+    "horizon": "H12",
+    "months": 12,
+    "hazard": "weekly 1-(1-p)^(1/52)",
+    "applies_outside_phases": [
+      "ACTIVE_PRE_SHORT"
+    ]
+  },
+  "exit": {
+    "tape": "EXIT_PNPS_FINAL_OOS_TAPE",
+    "threshold": 0.027174,
+    "hazard": "weekly 1-(1-p)^(1/13)",
+    "applies_in_phases": [
+      "ACTIVE_PRE_SHORT",
+      "FROZEN_SHORT_TO_BOTTOM",
+      "BOTTOM_CONFIRMED_ACTIVE",
+      "EXIT_ACTIVE"
+    ]
+  },
   "fee_one_way": 0.001,
-  "chosen_standard": {
+  "verified_metrics": {
     "DEV": 3.901464,
     "OOS": 1.805925,
-    "FULL": 5.698119
+    "FULL": 5.698119,
+    "MDD_DEV": 0.328344,
+    "MDD_OOS": 0.143034,
+    "ES95_DEV": 0.045237,
+    "ES95_OOS": 0.039543
   },
-  "superseded_reference": {
-    "policy": "W16_S4BOT_Z2_E60",
-    "DEV": 3.9887,
-    "OOS": 1.8369,
-    "FULL": 5.754
+  "targets_beat": {
+    "DEV": {
+      "EW": 1.678436,
+      "IVOL": 1.359191,
+      "MVP": 1.293437,
+      "ERC": 1.454809,
+      "MaxDiv": 1.3675,
+      "EQUITY100": 2.596036
+    },
+    "OOS": {
+      "EW": 1.086669,
+      "IVOL": 1.05148,
+      "MVP": 0.989202,
+      "ERC": 1.046559,
+      "MaxDiv": 1.041729,
+      "EQUITY100": 1.261142
+    }
   },
   "provenance": {
-    "fee": "rev363/config.py FEE_RESEARCH (10 bp one-way research assumption)",
-    "chosen_standard": "Threshold/Threshold/RQ03_NAV_20261027/02_NAV_CHUAN/",
+    "builder": "RAW_CODE/rq03_standard/build_chosen_standard.py",
+    "requires": "AI_HANDOFF tree (RQ03_AGGRESSIVE_20261026, RQ03_DEFENSIVE_REPAIR_20261026, OOS_FIRST_REDEVELOPMENT_20261027, RQ02_DEV_MAX_LEADTIME_20261026)",
     "selected_on": "2026-10-27"
   }
 }

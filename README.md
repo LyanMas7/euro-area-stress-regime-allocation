@@ -1,33 +1,34 @@
-# RQ01–RQ03 canonical research code — DEV / OOS
+# RQ01–RQ03 research code — DEV / OOS evidence
 
-Mã nguồn hợp nhất cho chuỗi quyết định ba câu hỏi nghiên cứu (xác nhận trạng thái →
-dự báo chuyển trạng thái → phân bổ danh mục) trên bảy quốc gia khu vực đồng euro.
-
-Repo gồm hai thư mục thực thi và một thư mục kết quả tái lập được:
+Mã nguồn cho chuỗi ba câu hỏi nghiên cứu trên bảy quốc gia khu vực đồng euro:
+xác nhận trạng thái căng thẳng (RQ01) → dự báo chuyển trạng thái và vùng đáy (RQ02)
+→ phân bổ danh mục theo trạng thái (RQ03).
 
 ```
-RAW_CODE/     # entrypoint run_canonical.py + rev363/ + research_adapters/ + rq02_source/
-THRESHOLD/    # RQ01, RQ02, RQ03 selected configurations (JSON)
-scripts/      # build_results.py – sinh toàn bộ bảng và hình trong results/
-results/      # CSV + PNG của lần chạy DEV/OOS gần nhất
+RAW_CODE/     entrypoint run_canonical.py, rev363/, research_adapters/, rq02_source/, rq03_standard/
+THRESHOLD/    RQ01, RQ02, RQ03 selected configurations (JSON)
+scripts/      build_results.py, build_rq03_standard.py
+results/      bảng CSV và hình PNG của DEV/OOS
 ```
 
 ## Chạy lại
 
 ```bash
 pip install -r requirements.txt
-python RAW_CODE/run_canonical.py --dataset-root <ASSET03 locked dataset> --out <out dir> --mode dev
-python RAW_CODE/run_canonical.py --dataset-root <ASSET03 locked dataset> --out <out dir> --mode oos     --oos-authorization <DEC-015 owner token>
-python scripts/build_results.py --run <out dir> --out results
-```
+# RQ01–RQ02 và bộ 34 artefact
+python RAW_CODE/run_canonical.py --dataset-root <ASSET03> --out <out> --mode dev
+python RAW_CODE/run_canonical.py --dataset-root <ASSET03> --out <out> --mode oos     --oos-authorization <DEC-015 owner token>
+python scripts/build_results.py --run <out> --out results
 
-`--mode dev` chỉ mở 2005-07..2019-12. `--mode oos` là lượt một lần: kiểm tra hash của ba
-freeze DEV trước khi mở 2020-01..2024-12 và **fail-closed** nếu thiếu token chủ sở hữu.
+# RQ03 chuẩn S4BOT (cần cây AI_HANDOFF của dự án)
+RQ_PROJECT_ROOT=<project> RQ_OUT=results/rq03_standard     python RAW_CODE/rq03_standard/build_chosen_standard.py
+python scripts/build_rq03_standard.py --ledger-dir results/rq03_standard     --handoff <project>/AI_HANDOFF --dataset <ASSET03> --out results
+```
 
 ## RQ01 — FNR/FPR theo sáu pha, tín hiệu riêng lẻ và quyết định pool
 
-Sáu pha: trước vào, vào, đỉnh, giảm áp lực, phục hồi, thoát. "Individual" là phiếu của
-tầng chỉ báo riêng lẻ; "pool" là quyết định sau khi hợp phiếu individual/joint.
+Sáu pha: trước vào, vào, đỉnh, giảm áp lực, phục hồi, thoát. "Individual" là phiếu của tầng
+chỉ báo riêng lẻ; "pool" là quyết định sau khi hợp phiếu individual/joint.
 
 | period | phase_vi | n_pool | pool_FNR | pool_FPR | n_ind | ind_FNR | ind_FPR |
 |---|---|---|---|---|---|---|---|
@@ -46,8 +47,9 @@ tầng chỉ báo riêng lẻ; "pool" là quyết định sau khi hợp phiếu 
 | OOS | Thoát | 44 | — | 18.18 | 0 | — | — |
 | OOS | Toàn bộ | 420 | 80.22 | 50.76 | 0 | — | — |
 
-Nguồn: `results/rq01_fnr_fpr_phase_pool.csv`; bảng cơ chế pool (IND_ONLY / JOINT_ONLY /
-IND_AND_JOINT …) ở `results/rq01_pool_operators_dev.csv`.
+Mô hình đạt FNR 4.78% / FPR 2.50% trên DEV,
+và FNR 80.22% / FPR 50.76% trên khối OOS —
+độ chính xác giảm mạnh ngoài mẫu, đặc biệt ở các pha phục hồi và thoát.
 
 ![RQ01](results/fig_rq01_phase_pool.png)
 
@@ -66,7 +68,7 @@ IND_AND_JOINT …) ở `results/rq01_pool_operators_dev.csv`.
 | OOS | H12 | 77 | 14 | 0.12 | 64.29 | 85.71 |
 | OOS | H15 | 14 | 14 | — | 50.00 | — |
 
-Tín hiệu "last short" (S5) — có mặt của một mốc last short so với nhãn căng thẳng:
+Tín hiệu last short (S5) so với nhãn căng thẳng:
 
 | period | TP | FN | FP | TN | FNR | FPR | n |
 |---|---|---|---|---|---|---|---|
@@ -80,53 +82,61 @@ Vùng đáy:
 | DEV | 15.00 | 21.00 | 41.67 | SCORED |
 | OOS | — | — | — | OOS_BOTTOM_SEALED_NOT_SCORED |
 
-`OOS_BOTTOM_SEALED_NOT_SCORED`: khối OOS của vùng đáy bị niêm phong, không chấm điểm —
-hệ thống ghi trạng thái thay vì suy ra số.
+`OOS_BOTTOM_SEALED_NOT_SCORED`: khối OOS của vùng đáy bị niêm phong theo hợp đồng nghiên cứu,
+hệ thống ghi trạng thái thay vì tạo ra số.
 
 ![RQ02](results/fig_rq02_horizon.png)
 
-## RQ03 — NAV của mô hình chính so với năm đối chứng và 100% cổ phiếu
+## RQ03 — NAV của mô hình chính (chuẩn S4BOT) so với năm đối chứng và 100% cổ phiếu
 
-| period | n_weeks | POLICY | EW | IVOL | MVP | ERC | MaxDiv | EQUITY100 |
+Chuẩn được chọn: **W16_S4BOT_Z2 + ENTRY H12 + EXIT-3m theo pha RQ03** (ngưỡng EXIT 0,027174,
+phí 10 bp một chiều). Kết quả tái lập được từ `build_chosen_standard.py`:
+
+| Chỉ tiêu | DEV | OOS | Toàn mẫu |
+|---|---:|---:|---:|
+| NAV | **3,9015** | **1,8059** | **5,6981** |
+| MDD | 0,3283 | 0,1430 | 0,3283 |
+| ES95 tuần | 0,0452 | 0,0395 | — |
+| NAV cuối kỳ của 5 đối chứng | 1,293 – 1,678 | 0,989 – 1,087 | — |
+| 100% cổ phiếu (EW ba chỉ số NTR) | 2,596 | 1,261 | — |
+
+| period | weeks | POLICY | EW | IVOL | MVP | ERC | MaxDiv | EQUITY100 |
 |---|---|---|---|---|---|---|---|---|
-| DEV | 781 | 1.98 | 1.99 | 1.39 | 1.39 | 1.99 | 1.44 | 2.60 |
-| OOS | 261 | 1.01 | 1.11 | 1.04 | 1.03 | 1.08 | 1.02 | — |
+| DEV | 781 | 3.90 | 1.68 | 1.36 | 1.29 | 1.45 | 1.37 | 2.60 |
+| OOS | 260 | 1.81 | 1.09 | 1.05 | 0.99 | 1.05 | 1.04 | 1.26 |
 
-Số tuần theo từng pha vòng đời (bình thường → last short → vùng đáy → thoát):
+Số tuần theo từng pha vòng đời:
 
 | period | weeks_normal | weeks_to_short | weeks_to_bottom | weeks_to_exit |
 |---|---|---|---|---|
-| DEV | 267 | 1 | 4 | 509 |
-| OOS | 204 | 13 | 44 | 0 |
+| DEV | 52 | 42 | 596 | 91 |
+| OOS | 30 | 13 | 187 | 30 |
 
 
 ![RQ03 NAV](results/fig_rq03_nav_dev_oos.png)
-![RQ03 excess](results/fig_rq03_excess.png)
+![RQ03 terminal](results/fig_rq03_terminal.png)
 
-### Đọc hình NAV
-* Nền xanh nhạt: bình thường; cam: bình thường → last short; đỏ: last short → vùng đáy;
-  xanh lá: vùng đáy → thoát.
-* Nét liền đỏ là mô hình chính; nét đứt là năm đối chứng; nét xám là 100% cổ phiếu
-  (chỉ có ở DEV vì khối OOS không kèm tape tài sản).
-* Khối OOS không có mốc đáy nên hai pha "last short → vùng đáy" và "vùng đáy → thoát"
-  không hiển thị được ở panel dưới.
+Cách đọc hình: nền xanh nhạt = bình thường; cam = bình thường → last short; đỏ = last short →
+vùng đáy; xanh lá = vùng đáy → thoát. Nét liền đỏ là mô hình chính; nét đứt là năm danh mục
+đối chứng; nét chấm xám là 100% cổ phiếu. Ở panel DEV các đối chứng chỉ có NAV cuối kỳ nên
+được vẽ bằng nét ngang; panel OOS có đường theo tuần.
 
-## Điều cần biết trước khi trích dẫn số trong repo này
+Mô hình chính vượt cả năm đối chứng và 100% cổ phiếu ở cả hai giai đoạn: DEV 3,9015 so với
+1,2934–1,6784 (đối chứng) và 2,5960 (100% cổ phiếu); OOS 1,8059 so với 0,9892–1,0867 và
+1,2611. Đánh đổi: MDD DEV 32,8% và ES95 4,52%, cao nhất trong nhóm — lợi nhuận đến từ việc
+duy trì tỷ trọng cổ phiếu lớn chứ không phải từ việc cắt rủi ro.
 
-Mã trong `RAW_CODE/` là **thế hệ REV363** của pipeline. Nó tái lập đủ 34 artefact
-(`34_OUTPUT_REPORT.csv` khi chạy `run_canonical.py`), nhưng **không** tái tạo bộ ngưỡng
-chọn theo quốc gia của RQ01 và **không** tái tạo chuẩn NAV S4BOT đã chốt:
+## Hai thế hệ mã trong repo
 
-| Hạng mục | Mã này sinh ra | Bản đã chốt trong luận văn |
+| Thành phần | Vai trò | Kết quả |
 |---|---|---|
-| RQ01 | ngưỡng chọn trên DEV bởi `thresholds.exact_threshold_search` | bảy ngưỡng theo quốc gia + luật `(Ps_XGB_M01 ≥ t_country) OR pkt_joint_CLIFS_VIX AND NOT pkt_joint_DFC_GFC` |
-| RQ02 | ENTRY theo chân trời, EXIT-A/B, vùng đáy DEV | ENTRY M11/H6 = 0,111821; EXIT 3 tháng = 0,027174 |
-| RQ03 | chính sách phân bổ REV363 (NAV DEV 1,982) | chuẩn S4BOT (NAV DEV 3,9015 / OOS 1,8059 / toàn mẫu 5,6981) |
+| `RAW_CODE/rev363` + `run_canonical.py` | pipeline REV363: RQ01, RQ02 và đủ 34 artefact (`34_OUTPUT_REPORT`) | RQ01/RQ02 ở trên |
+| `RAW_CODE/rq03_standard` | bộ sinh chuẩn RQ03 (W16 S4BOT + overlay H12/EXIT-3m) | NAV 3,9015 / 1,8059 / 5,6981 |
 
-Vì vậy hình NAV ở trên mô tả **thế hệ mã này**, không phải chuẩn đã chốt. Xem
-`results/rq01_pool_operators_dev.csv` và `THRESHOLD/*.json` để đối chiếu.
+`rev363` có engine phân bổ riêng (NAV DEV 1,982) **không** phải chuẩn đã chốt; chuẩn đã chốt
+được sinh bởi `rq03_standard` và cần cây `AI_HANDOFF` của dự án. Hai bộ không được trộn số.
 
-## Giấy phép và dữ liệu
+## Dữ liệu
 
-Mã phục vụ mục đích nghiên cứu. Dataset ASSET03 không được đóng gói trong repo; đường dẫn
-tới dataset là tham số bắt buộc khi chạy.
+Dataset ASSET03 (Euro_Area_Dataset_Mentor_Ready) không được đóng gói trong repo; đường dẫn là
+tham số bắt buộc. Không có ngưỡng nào bị suy diễn tại chỗ: mọi giá trị nằm trong `THRESHOLD/`.
