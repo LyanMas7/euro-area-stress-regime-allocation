@@ -74,8 +74,13 @@ raises the miss rate to 5.74%; adding the confirmation pair buys 5.02% miss rate
 false-alarm rate; the exclusion pair then removes 27 alarms and costs 5.03 points of miss rate. The rule behaves as
 "threshold plus two filters", not as a vote.</p>
 <table><thead><tr><th>variant</th><th>TP</th><th>FN</th><th>FP</th><th>TN</th><th>FNR</th><th>FPR</th><th>alarms</th></tr></thead><tbody><tr><td>Individual only (per-country threshold on the pooled score)</td><td>394</td><td>24</td><td>120</td><td>680</td><td>5.74</td><td>15.00</td><td>514</td></tr><tr><td>Individual + Joint (pair OR)</td><td>397</td><td>21</td><td>200</td><td>600</td><td>5.02</td><td>25.00</td><td>597</td></tr><tr><td>Pool (pair OR, excluded by the negative pair)</td><td>376</td><td>42</td><td>194</td><td>606</td><td>10.05</td><td>24.25</td><td>570</td></tr></tbody></table>
-<figure><img src="assets/fig_rq01_fnr_fpr.png" alt="RQ01 FNR and FPR by phase and pooled">
-<figcaption>Left: development window by phase. Right: pooled decision, development against out of sample.</figcaption></figure>
+<figure><a href="assets/fig01_rq01_phase_error.png"><img src="assets/fig01_rq01_phase_error.png" alt="Identification error by phase"></a>
+<figcaption><b>Figure 1.</b> Identification Error by Phase: Miss Rate Against False-Alarm Rate</figcaption></figure>
+<p><b>Interpretation.</b> The rule is silent in the calm, entry and peak phases and pays for that silence in recovery, where
+43.78% of calm months raise an alarm. The pooled 10.05% and 24.25% average a rule that is either perfectly quiet or strongly
+over-sensitive.</p>
+<p><b>Limitation.</b> A development-window diagnostic; the out-of-sample score tape needed to repeat it is not part of this
+release.</p>
 <p>The rule is conservative while the economy is calm or entering stress — no misses in the pre-entry, entry and peak
 phases — and pays for that in recovery, where 43.8% of calm months raise an alarm. Out of sample the false-alarm rate is
 stable (23.81%) while the miss rate rises to 15.38%: the rule lost sensitivity, not discipline.
@@ -91,15 +96,20 @@ that requires independent factors to agree. In all three, <b>Individual</b> move
 combination actually thresholded. A slow <i>Long</i> system feeds entry; a five-vote <i>Short</i> system, whose last vote is
 a last-short flag, feeds exit and bottom.</p>
 <table><thead><tr><th>task</th><th>period</th><th>threshold</th><th>n</th><th>TP</th><th>FN</th><th>FP</th><th>TN</th><th>FNR</th><th>FPR</th></tr></thead><tbody><tr><td>ENTRY (18m)</td><td>DEV</td><td>0.11</td><td>653</td><td>108</td><td>0</td><td>130.00</td><td>415.00</td><td>0.00</td><td>23.85</td></tr><tr><td>ENTRY (18m)</td><td>OOS</td><td>0.11</td><td>14</td><td>12</td><td>2</td><td>—</td><td>—</td><td>14.29</td><td>—</td></tr><tr><td>EXIT (3m)</td><td>DEV</td><td>0.03</td><td>418</td><td>18</td><td>0</td><td>87.00</td><td>313.00</td><td>0.00</td><td>21.75</td></tr><tr><td>EXIT (3m)</td><td>OOS</td><td>0.03</td><td>91</td><td>15</td><td>6</td><td>32.00</td><td>38.00</td><td>28.57</td><td>45.71</td></tr></tbody></table>
-<figure><img src="assets/fig_rq02_fnr_fpr.png" alt="RQ02 entry, exit and bottom results">
-<figcaption>Entry and exit miss rates and false-alarm rates by window; bottom-zone hit rate.</figcaption></figure>
+<figure><a href="assets/fig02_rq02_transition_error.png"><img src="assets/fig02_rq02_transition_error.png" alt="Entry and exit error and bottom-zone hit rate"></a>
+<figcaption><b>Figure 2.</b> Forecasting Error for Entry and Exit, and the Asset-Bottom Hit Rate</figcaption></figure>
+<p><b>Interpretation.</b> Entry buys its low miss rate with false alarms in development and cannot be scored on false alarms out
+of sample, where all 14 observations are positives. Exit degrades to 28.57% and 45.71%. The bottom zone keeps the trough inside
+the zone in one development forecast in four and one evaluation forecast in fifteen.</p>
+<p><b>Limitation.</b> Two of the five rates are undefined rather than zero, and the evaluation block rests on 14, 91 and 90
+scorable observations.</p>
 <p>Both models are calibrated towards recall: no episode is missed in development, at the cost of a false alarm in
 roughly one in four calm observations. Out of sample entry keeps a low miss rate (14.29%) but its false-alarm rate
 <b>cannot be defined</b> — all 14 scorable observations are positives, so an empty denominator is reported as missing,
 never as zero. Exit degrades on both dimensions (28.57% and 45.71%). The bottom rule hits
 14 of 60 matured forecasts in development (23.33%) with a negative median lead
-time, meaning it identifies the zone but on average after the trough; the out-of-sample block is sealed by the research
-contract and is not scored at all.</p>
+time, meaning it identifies the zone but on average after the trough. Out of sample the block is scored: 6 of 90 matured
+forecasts contained the trough (6.67%), against 14 of 60 (23.33%) in development.</p>
 
 <h2>4 · RQ03 — state-dependent allocation</h2>
 <p>The Main Model is a four-state machine in which the <i>permission</i> to restructure changes with the state. Normal
@@ -111,17 +121,31 @@ and buying back higher, at the cost of 596 of 781 development weeks spent in tha
 activates the only fully invested state — equity 100% of NAV, held — after which a profit ladder of four 20% trims at
 +8%, +16%, +25% and +40%, a four-week cooldown, a 52-week minimum hold and a 10–15% trail returns the portfolio through
 the post-exit band (S4) to normal, with 26 consecutive normal weeks re-arming the cycle.</p>
-<figure><img src="assets/fig_rq03_state_machine.png" alt="State transitions of the restructuring mechanism">
-<figcaption>State transitions and the allocation rule attached to each state.</figcaption></figure>
+<figure><a href="assets/fig03_rq03_state_machine.png"><img src="assets/fig03_rq03_state_machine.png" alt="Restructuring states and allocation rules"></a>
+<figcaption><b>Figure 3.</b> Restructuring States and the Allocation Rule Attached to Each State</figcaption></figure>
+<p><b>Interpretation.</b> The diagram locates the lock: between short confirmation and bottom confirmation the band allocator is
+withdrawn and only the lock rule applies.</p>
+<p><b>Limitation.</b> The boxes state the rules as executed; parameter values are in the register below.</p>
 <p>Four constraints act on every target: a hard weekly expected-shortfall cap of 2%, the state band clamps, a zero floor on
 cash (so no leverage), and a 10 basis point one-way transaction cost on realised turnover. Two parameters are often
 assumed to be active and are not: the risk-tolerance scaling table is disabled, and the probability branch of the cycle
 reset is inert by construction, so the cycle is re-armed by time rather than by a probability condition.</p>
+<figure><a href="assets/fig04_rq03_allocation.png"><img src="assets/fig04_rq03_allocation.png" alt="Portfolio composition and regime evolution, 2005-2024"></a>
+<figcaption><b>Figure 4.</b> Portfolio Composition and Regime Evolution, 2005-2024</figcaption></figure>
+<p><b>Interpretation.</b> The policy is equity-heavy by design: the three equity sleeves hold about three quarters of NAV for most
+of the period, cash reaches 100% in ten weeks only, and the regime band shows a cycle rather than a one-way de-risking. The lock
+accounts for 783 of 1,041 weeks.</p>
+<p><b>Limitation.</b> Weekly weights are re-based to 100% for display, and the band records the states the executed configuration
+produced.</p>
 <h3>Parameter register</h3>
 <table><thead><tr><th>Parameter / Threshold</th><th>Actual Value</th><th>Unit</th><th>Class</th></tr></thead><tbody><tr><td>Allocation engine</td><td>four-state state-and-cycle allocator</td><td>—</td><td>Fixed assumption</td></tr><tr><td>Normal-state equity target</td><td>0.9</td><td>share of NAV</td><td>Calibrated</td></tr><tr><td>Normal-state bond target</td><td>0.1</td><td>share of NAV</td><td>Calibrated</td></tr><tr><td>Lock-state bond share (base)</td><td>0.65</td><td>share of NAV</td><td>Calibrated</td></tr><tr><td>Lock-state stress tilt</td><td>0.1</td><td>share per unit of P_S</td><td>Calibrated</td></tr><tr><td>Pre-bottom residual split</td><td>pro-rata</td><td>rule</td><td>Fixed assumption</td></tr><tr><td>Pre-bottom window</td><td>26</td><td>weeks</td><td>Calibrated</td></tr><tr><td>Pre-bottom cooldown</td><td>4</td><td>weeks</td><td>Calibrated</td></tr><tr><td>Pre-bottom stop</td><td>0.1</td><td>return</td><td>Calibrated</td></tr><tr><td>Bottom confirmation: normal probability</td><td>0.995</td><td>probability</td><td>Calibrated</td></tr><tr><td>Bottom confirmation: stress probability</td><td>0.02</td><td>probability</td><td>Calibrated</td></tr><tr><td>Bottom confirmation: volatility z-score</td><td>2</td><td>standard deviations</td><td>Calibrated</td></tr><tr><td>Bottom confirmation: drawdown tolerance</td><td>0.05</td><td>return</td><td>Calibrated</td></tr><tr><td>Bottom-state equity target</td><td>1</td><td>share of NAV</td><td>Calibrated</td></tr><tr><td>Recovery equity cap</td><td>0.8</td><td>share of NAV</td><td>Calibrated</td></tr><tr><td>Recovery normal-probability gate</td><td>0.98</td><td>probability</td><td>Calibrated</td></tr><tr><td>Recovery stress-probability gate</td><td>0.02</td><td>probability</td><td>Calibrated</td></tr><tr><td>State S4 high-volatility response</td><td>bonds absorb the shock</td><td>rule</td><td>Fixed assumption</td></tr><tr><td>Post-exit equity floor</td><td>0.5</td><td>share of NAV</td><td>Calibrated</td></tr><tr><td>Post-exit bond ceiling</td><td>0.25</td><td>share of NAV</td><td>Calibrated</td></tr><tr><td>Volatility-z direction</td><td>risk-off</td><td>sign</td><td>Fixed assumption</td></tr><tr><td>Profit-taking ladder</td><td>+8% / 20%; +16% / 20%; +25% / 20%; +40% / 20%</td><td>gain / share</td><td>Calibrated</td></tr><tr><td>Tranche cooldown</td><td>4</td><td>weeks</td><td>Calibrated</td></tr><tr><td>Minimum holding after the bottom</td><td>52</td><td>weeks</td><td>Calibrated</td></tr><tr><td>Profit trail</td><td>0.1</td><td>drawdown from peak</td><td>Calibrated</td></tr><tr><td>Runner activation</td><td>2</td><td>tranches completed</td><td>Calibrated</td></tr><tr><td>Runner trail</td><td>0.15</td><td>drawdown from peak</td><td>Calibrated</td></tr><tr><td>Profit proceeds destination</td><td>on</td><td>rule</td><td>Fixed assumption</td></tr><tr><td>Post-bottom equity cap</td><td>1</td><td>share of NAV</td><td>Calibrated</td></tr><tr><td>Post-bottom stop</td><td>0.1</td><td>return</td><td>Calibrated</td></tr><tr><td>Pre-bottom stop</td><td>0.08</td><td>return</td><td>Calibrated</td></tr><tr><td>Stop reference</td><td>equal-weight equity basket</td><td>rule</td><td>Fixed assumption</td></tr><tr><td>Hard expected-shortfall cap</td><td>0.02</td><td>weekly return</td><td>Calibrated</td></tr><tr><td>Pre-bottom ES overlay</td><td>—</td><td>rule</td><td>Fixed assumption</td></tr><tr><td>Bottom supplement switch</td><td>on</td><td>flag</td><td>Calibrated</td></tr><tr><td>Forced bottom entry</td><td>off</td><td>flag</td><td>Fixed assumption</td></tr><tr><td>Cycle reset window</td><td>26</td><td>weeks</td><td>Calibrated</td></tr><tr><td>Cycle reset normal-probability</td><td>1.01</td><td>probability</td><td>Fixed assumption</td></tr><tr><td>Risk-tolerance scaling</td><td>off</td><td>flag</td><td>Fixed assumption</td></tr><tr><td>Bottom trigger rule</td><td>first confirmed bottom</td><td>rule</td><td>Fixed assumption</td></tr><tr><td>Bottom lookback</td><td>0</td><td>weeks</td><td>Fixed assumption</td></tr><tr><td>Bottom ES bypass</td><td>on</td><td>flag</td><td>Fixed assumption</td></tr><tr><td>Lock-state bond band</td><td>50 – 80</td><td>share of NAV</td><td>Calculated</td></tr><tr><td>Transaction cost</td><td>10</td><td>basis points</td><td>Fixed assumption</td></tr></tbody></table>
-<figure><img src="assets/fig_rq03_nav_dev_oos.png" alt="Main model NAV against five benchmarks and 100% equity">
-<figcaption>Upper panel: development window, benchmarks at terminal value. Lower panel: out of sample, benchmarks weekly.
-Shading marks the four lifecycle stages.</figcaption></figure>
+<figure><a href="assets/fig05_rq03_nav_paths.png"><img src="assets/fig05_rq03_nav_paths.png" alt="Main model NAV against five benchmarks and full equity"></a>
+<figcaption><b>Figure 5.</b> Net Asset Value of the Main Model Against Five Benchmarks and Full Equity</figcaption></figure>
+<p><b>Interpretation.</b> The main model compounds 3.9015 in development and 1.8059 in evaluation, against 2.5960 and 1.2611 for
+full equity and 1.678/1.087 for equal weights. The gap opens in the drawdowns, where the policy keeps equity and the benchmarks
+do not.</p>
+<p><b>Limitation.</b> Development benchmarks are terminal values because only end-of-window levels exist; the evaluation window
+was open when the model was chosen.</p>
 <table><thead><tr><th>period</th><th>weeks</th><th>POLICY</th><th>EW</th><th>IVOL</th><th>MVP</th><th>ERC</th><th>MaxDiv</th><th>EQUITY100</th></tr></thead><tbody><tr><td>DEV</td><td>781</td><td>3.9015</td><td>1.6784</td><td>1.3592</td><td>1.2934</td><td>1.4548</td><td>1.3675</td><td>2.5960</td></tr><tr><td>OOS</td><td>260</td><td>1.8059</td><td>1.0867</td><td>1.0515</td><td>0.9892</td><td>1.0466</td><td>1.0417</td><td>1.2611</td></tr></tbody></table>
 <p>The model beats all five passive benchmarks and the fully invested equity portfolio in both windows: 3.9015 against
 1.2934–1.6784 and 2.5960 in development, 1.8059 against 0.9892–1.0867 and 1.2611 out of sample, compounding to 5.6981
@@ -129,9 +153,12 @@ over the continuous path. The premium is paid for with risk: maximum drawdown of
 expected shortfall of the six strategies in both windows. This is a return engine with a defensive overlay, not a
 risk-control device. Benchmarks are passive construction rules and are not subject to the lock.</p>
 <table><thead><tr><th>strategy</th><th>MDD_DEV</th><th>MDD_OOS</th><th>ES95_DEV</th><th>ES95_OOS</th></tr></thead><tbody><tr><td>Main model</td><td>0.3283</td><td>0.1430</td><td>0.0452</td><td>0.0395</td></tr><tr><td>EW</td><td>0.1943</td><td>0.1573</td><td>0.0198</td><td>0.0268</td></tr><tr><td>IVOL</td><td>0.0498</td><td>0.0737</td><td>0.0067</td><td>0.0091</td></tr><tr><td>MVP</td><td>0.0337</td><td>0.0819</td><td>0.0045</td><td>0.0061</td></tr><tr><td>ERC</td><td>0.0375</td><td>0.0597</td><td>0.0066</td><td>0.0068</td></tr><tr><td>MaxDiv</td><td>0.0342</td><td>0.0748</td><td>0.0052</td><td>0.0072</td></tr></tbody></table>
-<figure><img src="assets/fig_rq03_terminal.png" alt="Terminal NAV by strategy">
-<figcaption>Terminal NAV by strategy in each window. The equity-only reference is the honest yardstick for a portfolio that
-carries more than 70% equity on average.</figcaption></figure>
+<figure><a href="assets/fig06_rq03_terminal_nav.png"><img src="assets/fig06_rq03_terminal_nav.png" alt="Terminal NAV by strategy and window"></a>
+<figcaption><b>Figure 6.</b> Terminal Net Asset Value by Strategy and Window</figcaption></figure>
+<p><b>Interpretation.</b> Terminal NAV ranks the main model first in both windows, with full equity second in both and the five
+passive rules near one.</p>
+<p><b>Limitation.</b> Terminal NAV ignores the path: the premium is earned with the deepest drawdown and the highest weekly
+expected shortfall of the group.</p>
 
 <h2>5 · Conclusions</h2>
 <p><b>Identification is the reliable link:</b> 10% miss rate at a 25% false-alarm rate in development, with a stable

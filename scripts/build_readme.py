@@ -33,6 +33,12 @@ def table(df, cols, fmt=None, dash="—"):
     return out
 
 
+def figure_block(num, title, path, reading, limitation):
+    """GT2006 exhibit block: title, chart, then interpretation and limitation beneath it."""
+    return (f"**Figure {num}. {title}**\n\n![Figure {num}]({path})\n\n"
+            f"**Interpretation.** {reading}\n\n**Limitation.** {limitation}\n")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--repo", default=".")
@@ -166,7 +172,13 @@ is almost always stressed needs a threshold close to one to separate its calm mo
 months needs a very low one. Using a single common threshold would either silence the low-stress countries or turn the
 high-stress ones permanently on.
 
-![RQ01](results/fig_rq01_fnr_fpr.png)
+{figure_block(1, "Identification Error by Phase: Miss Rate Against False-Alarm Rate",
+                "results/fig01_rq01_phase_error.png",
+                "The rule is silent in the calm, entry and peak phases and pays for that silence in recovery, where "
+                "43.78% of calm months raise an alarm. Read the phases rather than the pooled line: the pooled 10.05% "
+                "and 24.25% average a rule that is either perfectly quiet or strongly over-sensitive.",
+                "The phase split is a development-window diagnostic; the out-of-sample score tape needed to repeat it "
+                "is not part of this release, so the panel is not a validation result.")}
 
 ### 2.3 Development window (2005–2019)
 
@@ -275,11 +287,22 @@ as 0.00% would make the exit model look perfect. The same applies to the bottom 
 
 {table(r2b, ["period", "n_hit", "n_issued_matured", "hit_rate", "forecast_coverage"])}
 
-The out-of-sample bottom block is sealed by the research contract: it is not scored at all, so no hit rate exists. In
-addition, the operating point published here (threshold {e_dev.threshold:.6f}) cannot be re-derived from the tapes
-shipped in this repository; the closest reproducible operating points are:
+The out-of-sample bottom block is scored in the registered table: {b_oos.n_hit:.0f} of {b_oos.n_issued_matured:.0f}
+matured forecasts contained the trough ({b_oos.hit_rate:.2f}%), against {b_dev.n_hit:.0f} of
+{b_dev.n_issued_matured:.0f} ({b_dev.hit_rate:.2f}%) in development. In addition, the operating point published here
+(threshold {e_dev.threshold:.6f}) cannot be re-derived from the tapes shipped in this repository; the closest
+reproducible operating points are:
 
 {table(r2a, ["variant", "DEV_FNR", "DEV_FPR", "OOS_FNR", "OOS_FPR", "status"])}
+
+{figure_block(2, "Forecasting Error for Entry and Exit, and the Asset-Bottom Hit Rate",
+              "results/fig02_rq02_transition_error.png",
+              "Entry buys its low miss rate with false alarms in development and cannot be scored on false alarms out "
+              "of sample, where all 14 observations are positives. Exit is the opposite: quiet in development, then "
+              "28.57% and 45.71% in evaluation. The bottom zone is weakest, keeping the trough inside the zone in "
+              "about one forecast in four in development and one in fifteen in evaluation.",
+              "Two of the five rates are undefined rather than zero, and the evaluation block rests on 14, 91 and 90 "
+              "scorable observations, so none of these rates is estimated with precision.")}
 
 **Interpretation.** The gap between development and out-of-sample accuracy is the central result of RQ02. Entry
 survives because onset has a slow, persistent signature. Exit and bottom do not, because both depend on the exact timing
@@ -316,7 +339,13 @@ honest yardstick for a strategy whose average equity share is above 70%.
 The Main Model is not a static weighting rule with a filter on top. It is a four-state machine in which the *permission*
 to restructure changes with the state. The diagram below is the complete transition structure.
 
-![State machine](results/fig_rq03_state_machine.png)
+{figure_block(3, "Restructuring States and the Allocation Rule Attached to Each State",
+                "results/fig03_rq03_state_machine.png",
+                "The diagram locates the lock precisely: between short confirmation and bottom confirmation the band "
+                "allocator is withdrawn and only the lock rule applies, which is why the policy spends most of its "
+                "life in a defensive posture and still holds equity when the bottom is confirmed.",
+                "The boxes state the rules as executed; they do not carry parameter values, which are listed in the "
+                "register below.")}
 
 The four states are labelled **S1** (normal), **S2** (locked after short confirmation), **S3** (bottom confirmed) and
 **S4** (post-exit). These labels are used in the diagram and in the parameter register below.
@@ -366,6 +395,15 @@ the stop completes, the model passes through a post-exit state in which the band
 equity floor, and returns to the normal state once the phase clock leaves the exit phase. Twenty-six consecutive normal
 weeks re-arm the bottom supplement for a new cycle.
 
+{figure_block(4, "Portfolio Composition and Regime Evolution, 2005-2024",
+                "results/fig04_rq03_allocation.png",
+                "The policy is equity-heavy by design: the three equity sleeves hold roughly three quarters of NAV for "
+                "most of the period, cash reaches 100% in ten weeks only, and the regime band shows a cycle rather "
+                "than a one-way de-risking. The lock is where most of the sample is spent, 783 of 1,041 weeks, so the "
+                "mechanism is better described as a long defensive wait interrupted by short bottom states.",
+                "Weekly weights are re-based to 100% for display and the band records the states the executed "
+                "configuration produced; a different execution path would move the band even under identical rules.")}
+
 ### 4.3 Parameter register
 
 Every value below is read from the configuration the executed policy used. "Fixed assumption" means a design choice
@@ -410,7 +448,14 @@ was designed for; a fifteen-year window with two large drawdowns is a favourable
 
 {table(r3, ["period", "weeks", "POLICY", "EW", "IVOL", "MVP", "ERC", "MaxDiv", "EQUITY100"], {"weeks": "{:.0f}", "POLICY": "{:.4f}", "EW": "{:.4f}", "IVOL": "{:.4f}", "MVP": "{:.4f}", "ERC": "{:.4f}", "MaxDiv": "{:.4f}", "EQUITY100": "{:.4f}"})}
 
-![RQ03 NAV](results/fig_rq03_nav_dev_oos.png)
+{figure_block(5, "Net Asset Value of the Main Model Against Five Benchmarks and Full Equity",
+                "results/fig05_rq03_nav_paths.png",
+                "The main model compounds 3.9015 in development and 1.8059 in evaluation, against 2.5960 and 1.2611 "
+                "for full equity and 1.678/1.087 for equal weights. The gap opens in the two drawdowns, where the "
+                "policy keeps equity and the benchmarks do not, and it is not given back in the recoveries.",
+                "Development benchmarks are drawn as terminal values because only end-of-window levels exist for that "
+                "period; the evaluation window was open when the model was chosen, so panel (b) is not a blind "
+                "holdout.")}
 
 **Key finding.** Out of sample the Main Model earns {o3.POLICY:.4f} against {o3.EW:.4f} for equal weights,
 {max(o3.IVOL, o3.MVP, o3.MaxDiv, o3.ERC):.4f} for the best optimised benchmark and {o3.EQUITY100:.4f} for 100% equity.
@@ -426,7 +471,13 @@ time.
 objective is to minimise drawdown would reject it; an investor whose objective is terminal wealth subject to an
 acceptance of large interim losses would not.
 
-![RQ03 terminal](results/fig_rq03_terminal.png)
+{figure_block(6, "Terminal Net Asset Value by Strategy and Window",
+                "results/fig06_rq03_terminal_nav.png",
+                "Terminal NAV ranks the main model first in both windows, with full equity second in both and the five "
+                "passive rules left near one. The ordering does not flip between windows, which is the relevant test "
+                "for a rule applied unchanged.",
+                "Terminal NAV ignores the path: the strategy reaches these levels with the deepest drawdown and the "
+                "highest weekly expected shortfall of the group, so the ranking is not a risk-adjusted one.")}
 
 **Limitation.** The out-of-sample window is 260 weeks and contains one shock. The strategy was selected with that
 window already open, so the comparison against the benchmarks is not an independent test. Turnover and cost are charged

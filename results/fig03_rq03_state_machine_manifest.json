@@ -1,0 +1,13 @@
+{
+  "figure": 3,
+  "title": "Restructuring States and the Allocation Rule Attached to Each State",
+  "proof": false,
+  "page_size_in": [
+    8.5,
+    11.0
+  ],
+  "style_register_version": "1.0.0",
+  "files": {
+    "fig03_rq03_state_machine.png": "817e658d7b7ab4c660b6fce54cf142b9a43450a274d50dbbdd9b75317ef84b15"
+  }
+}

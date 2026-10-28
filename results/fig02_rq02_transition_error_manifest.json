@@ -1,0 +1,13 @@
+{
+  "figure": 2,
+  "title": "Forecasting Error for Entry and Exit, and the Asset-Bottom Hit Rate",
+  "proof": false,
+  "page_size_in": [
+    8.5,
+    11.0
+  ],
+  "style_register_version": "1.0.0",
+  "files": {
+    "fig02_rq02_transition_error.png": "2df69556a078d60ef2c42b8271b9c9d55eb004dce679d307e3efcc8c9616849f"
+  }
+}

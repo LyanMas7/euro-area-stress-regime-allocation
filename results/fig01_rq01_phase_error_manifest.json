@@ -1,0 +1,13 @@
+{
+  "figure": 1,
+  "title": "Identification Error by Phase: Miss Rate Against False-Alarm Rate",
+  "proof": false,
+  "page_size_in": [
+    8.5,
+    11.0
+  ],
+  "style_register_version": "1.0.0",
+  "files": {
+    "fig01_rq01_phase_error.png": "75930d3006de9a9638d19aa1c4afccab79a16b162b7b3073e89a26cae17999dc"
+  }
+}

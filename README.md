@@ -87,7 +87,14 @@ is almost always stressed needs a threshold close to one to separate its calm mo
 months needs a very low one. Using a single common threshold would either silence the low-stress countries or turn the
 high-stress ones permanently on.
 
-![RQ01](results/fig_rq01_fnr_fpr.png)
+**Figure 1. Identification Error by Phase: Miss Rate Against False-Alarm Rate**
+
+![Figure 1](results/fig01_rq01_phase_error.png)
+
+**Interpretation.** The rule is silent in the calm, entry and peak phases and pays for that silence in recovery, where 43.78% of calm months raise an alarm. Read the phases rather than the pooled line: the pooled 10.05% and 24.25% average a rule that is either perfectly quiet or strongly over-sensitive.
+
+**Limitation.** The phase split is a development-window diagnostic; the out-of-sample score tape needed to repeat it is not part of this release, so the panel is not a validation result.
+
 
 ### 2.3 Development window (2005–2019)
 
@@ -234,15 +241,26 @@ as 0.00% would make the exit model look perfect. The same applies to the bottom 
 | OOS | 6 | 90 | 6.67 | 94.74 |
 
 
-The out-of-sample bottom block is sealed by the research contract: it is not scored at all, so no hit rate exists. In
-addition, the operating point published here (threshold 0.111821) cannot be re-derived from the tapes
-shipped in this repository; the closest reproducible operating points are:
+The out-of-sample bottom block is scored in the registered table: 6 of 90
+matured forecasts contained the trough (6.67%), against 14 of
+60 (23.33%) in development. In addition, the operating point published here
+(threshold 0.111821) cannot be re-derived from the tapes shipped in this repository; the closest
+reproducible operating points are:
 
 | variant | DEV_FNR | DEV_FPR | OOS_FNR | OOS_FPR | status |
 |---|---|---|---|---|---|
 | Selected operating point 0.111821 | 0.00 | 23.85 | 14.29 | — | SELECTED — tape not shipped |
 | reproducible reproducible logistic score at 0.191936 | 0.00 | 12.48 | 35.71 | — | REPRODUCIBLE from shipped registry |
 | reproducible reproducible logistic score at 0.244947 | 0.00 | 3.67 | 42.86 | — | REPRODUCIBLE from shipped registry |
+
+
+**Figure 2. Forecasting Error for Entry and Exit, and the Asset-Bottom Hit Rate**
+
+![Figure 2](results/fig02_rq02_transition_error.png)
+
+**Interpretation.** Entry buys its low miss rate with false alarms in development and cannot be scored on false alarms out of sample, where all 14 observations are positives. Exit is the opposite: quiet in development, then 28.57% and 45.71% in evaluation. The bottom zone is weakest, keeping the trough inside the zone in about one forecast in four in development and one in fifteen in evaluation.
+
+**Limitation.** Two of the five rates are undefined rather than zero, and the evaluation block rests on 14, 91 and 90 scorable observations, so none of these rates is estimated with precision.
 
 
 **Interpretation.** The gap between development and out-of-sample accuracy is the central result of RQ02. Entry
@@ -280,7 +298,14 @@ honest yardstick for a strategy whose average equity share is above 70%.
 The Main Model is not a static weighting rule with a filter on top. It is a four-state machine in which the *permission*
 to restructure changes with the state. The diagram below is the complete transition structure.
 
-![State machine](results/fig_rq03_state_machine.png)
+**Figure 3. Restructuring States and the Allocation Rule Attached to Each State**
+
+![Figure 3](results/fig03_rq03_state_machine.png)
+
+**Interpretation.** The diagram locates the lock precisely: between short confirmation and bottom confirmation the band allocator is withdrawn and only the lock rule applies, which is why the policy spends most of its life in a defensive posture and still holds equity when the bottom is confirmed.
+
+**Limitation.** The boxes state the rules as executed; they do not carry parameter values, which are listed in the register below.
+
 
 The four states are labelled **S1** (normal), **S2** (locked after short confirmation), **S3** (bottom confirmed) and
 **S4** (post-exit). These labels are used in the diagram and in the parameter register below.
@@ -329,6 +354,15 @@ each at +8%, +16%, +25% and +40% of the entry gain, with a four-week cooldown be
 the stop completes, the model passes through a post-exit state in which the band allocator is restored with a lower
 equity floor, and returns to the normal state once the phase clock leaves the exit phase. Twenty-six consecutive normal
 weeks re-arm the bottom supplement for a new cycle.
+
+**Figure 4. Portfolio Composition and Regime Evolution, 2005-2024**
+
+![Figure 4](results/fig04_rq03_allocation.png)
+
+**Interpretation.** The policy is equity-heavy by design: the three equity sleeves hold roughly three quarters of NAV for most of the period, cash reaches 100% in ten weeks only, and the regime band shows a cycle rather than a one-way de-risking. The lock is where most of the sample is spent, 783 of 1,041 weeks, so the mechanism is better described as a long defensive wait interrupted by short bottom states.
+
+**Limitation.** Weekly weights are re-based to 100% for display and the band records the states the executed configuration produced; a different execution path would move the band even under identical rules.
+
 
 ### 4.3 Parameter register
 
@@ -447,7 +481,14 @@ was designed for; a fifteen-year window with two large drawdowns is a favourable
 | OOS | 260 | 1.8059 | 1.0867 | 1.0515 | 0.9892 | 1.0466 | 1.0417 | 1.2611 |
 
 
-![RQ03 NAV](results/fig_rq03_nav_dev_oos.png)
+**Figure 5. Net Asset Value of the Main Model Against Five Benchmarks and Full Equity**
+
+![Figure 5](results/fig05_rq03_nav_paths.png)
+
+**Interpretation.** The main model compounds 3.9015 in development and 1.8059 in evaluation, against 2.5960 and 1.2611 for full equity and 1.678/1.087 for equal weights. The gap opens in the two drawdowns, where the policy keeps equity and the benchmarks do not, and it is not given back in the recoveries.
+
+**Limitation.** Development benchmarks are drawn as terminal values because only end-of-window levels exist for that period; the evaluation window was open when the model was chosen, so panel (b) is not a blind holdout.
+
 
 **Key finding.** Out of sample the Main Model earns 1.8059 against 1.0867 for equal weights,
 1.0515 for the best optimised benchmark and 1.2611 for 100% equity.
@@ -463,7 +504,14 @@ time.
 objective is to minimise drawdown would reject it; an investor whose objective is terminal wealth subject to an
 acceptance of large interim losses would not.
 
-![RQ03 terminal](results/fig_rq03_terminal.png)
+**Figure 6. Terminal Net Asset Value by Strategy and Window**
+
+![Figure 6](results/fig06_rq03_terminal_nav.png)
+
+**Interpretation.** Terminal NAV ranks the main model first in both windows, with full equity second in both and the five passive rules left near one. The ordering does not flip between windows, which is the relevant test for a rule applied unchanged.
+
+**Limitation.** Terminal NAV ignores the path: the strategy reaches these levels with the deepest drawdown and the highest weekly expected shortfall of the group, so the ranking is not a risk-adjusted one.
+
 
 **Limitation.** The out-of-sample window is 260 weeks and contains one shock. The strategy was selected with that
 window already open, so the comparison against the benchmarks is not an independent test. Turnover and cost are charged

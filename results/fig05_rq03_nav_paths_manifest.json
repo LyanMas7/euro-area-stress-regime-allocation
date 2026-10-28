@@ -1,0 +1,13 @@
+{
+  "figure": 5,
+  "title": "Net Asset Value of the Main Model Against Five Benchmarks and Full Equity",
+  "proof": false,
+  "page_size_in": [
+    8.5,
+    11.0
+  ],
+  "style_register_version": "1.0.0",
+  "files": {
+    "fig05_rq03_nav_paths.png": "736b13ead324258dffb1f5818dd842ae92964a8545bf6e514aed1820cd5a5aae"
+  }
+}

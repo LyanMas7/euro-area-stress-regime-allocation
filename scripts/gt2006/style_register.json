@@ -1,0 +1,549 @@
+{
+  "register_version": "1.0.0",
+  "register_id": "GT2006-ACADEMIC-PRESENTATION",
+  "reference": {
+    "authors": "Guidolin, M., & Timmermann, A.",
+    "year": 2006,
+    "title": "Asset Allocation under Multivariate Regime Switching",
+    "series": "Federal Reserve Bank of St. Louis Working Paper 2005-002C",
+    "pdf_pages_studied": "28-41",
+    "printed_pages_studied": "27-39",
+    "exhibits": "Tables 1-5; Figures 1-8"
+  },
+  "page": {
+    "default_size": "letter",
+    "sizes_in": {
+      "letter": [
+        8.5,
+        11.0
+      ],
+      "a4": [
+        8.27,
+        11.69
+      ]
+    },
+    "orientation_default": "portrait",
+    "margins_in": {
+      "top": 0.9,
+      "bottom": 0.95,
+      "left": 0.75,
+      "right": 0.75
+    },
+    "content_width_in": 7.0,
+    "wide_table_max_width_in": 7.15,
+    "landscape_content_width_in": 10.0,
+    "page_number": {
+      "show": true,
+      "position": "bottom_center",
+      "size_pt": 10,
+      "font": "body"
+    }
+  },
+  "typography": {
+    "families": {
+      "display": "Times New Roman",
+      "body": "Garamond",
+      "numeric": "Times New Roman",
+      "figure": "Garamond",
+      "fallback": [
+        "DejaVu Serif"
+      ]
+    },
+    "sizes_pt": {
+      "exhibit_number": 13.0,
+      "exhibit_title": 13.0,
+      "method_paragraph": 11.0,
+      "equation": 11.0,
+      "table_panel_heading": 11.0,
+      "table_group_heading": 10.5,
+      "table_header": 11.0,
+      "table_body": 10.0,
+      "table_body_small": 9.5,
+      "table_note": 8.5,
+      "figure_panel_title": 10.5,
+      "figure_panel_caption": 8.5,
+      "axis_label": 9.0,
+      "tick_label": 7.5,
+      "legend": 8.0,
+      "legend_small": 7.2,
+      "figure_note": 8.5,
+      "source_note": 8.5,
+      "page_number": 10.0
+    },
+    "weights": {
+      "exhibit_number": "bold",
+      "exhibit_title": "bold",
+      "method_paragraph": "regular",
+      "table_panel_heading": "bold",
+      "table_group_heading": "bold",
+      "table_header": "regular",
+      "table_body": "regular",
+      "figure_panel_title": "bold",
+      "figure_panel_caption": "bold",
+      "axis_label": "bold",
+      "tick_label": "regular",
+      "legend": "regular",
+      "figure_note": "regular"
+    },
+    "italic_roles": [
+      "source_note",
+      "equation_symbols"
+    ],
+    "line_spacing": {
+      "method_paragraph": 1.05,
+      "table_body": 1.0,
+      "notes": 1.05
+    },
+    "justification": {
+      "method_paragraph": "justified",
+      "notes": "left",
+      "table_cells": "center"
+    }
+  },
+  "headings": {
+    "number_template": "{kind} {number}",
+    "continued_template": "{kind} {number} (continued)",
+    "continued_title": "optional_short_title",
+    "number_alignment": "center",
+    "title_alignment": "center",
+    "number_to_title_gap_pt": 4,
+    "title_to_body_gap_pt": 8,
+    "max_title_lines": 3,
+    "title_sentence_case": false,
+    "equation_placement": "below_method_paragraph_centered"
+  },
+  "panels": {
+    "table_panel_label_template": "{letter} — {title}",
+    "table_panel_label_short_template": "{letter}: {title}",
+    "figure_panel_label_template": "({letter}) {title}",
+    "figure_panel_title_template": "{title}",
+    "table_panel_heading_alignment": "center",
+    "figure_panel_title_alignment": "center",
+    "figure_panel_title_location": "inside_outer_box_top",
+    "figure_panel_caption_location": "below_axes_centered",
+    "reading_order": "top_to_bottom_left_to_right"
+  },
+  "axes": {
+    "frame": "full_rectangular",
+    "frame_width_pt": 0.55,
+    "heavy_frame_width_pt": 1.6,
+    "frame_color": "#000000",
+    "tick_direction": "out",
+    "tick_length_pt": 2.5,
+    "tick_width_pt": 0.5,
+    "tick_label_size_pt": 7.5,
+    "axis_label_size_pt": 9.0,
+    "axis_label_pad_pt": 3.0,
+    "grid": false,
+    "zero_line": false,
+    "secondary_y_axis": false,
+    "panel_outer_box": {
+      "enabled": true,
+      "width_pt": 0.35,
+      "color": "#000000"
+    },
+    "limits": {
+      "probability": [
+        0.0,
+        1.0
+      ],
+      "allocation_weight": [
+        0.0,
+        1.0
+      ],
+      "stacked_area_percent": [
+        0.0,
+        100.0
+      ]
+    },
+    "tick_formats": {
+      "probability": "%.1f",
+      "allocation_weight": "%.1f",
+      "percent": "%d%%",
+      "horizon": "%d"
+    }
+  },
+  "lines": {
+    "primary_width_pt": 0.9,
+    "secondary_width_pt": 0.75,
+    "reference_width_pt": 1.8,
+    "bound_width_pt": 0.7,
+    "marker_size_pt": 2.4,
+    "state_interval_width_pt": 0.8,
+    "styles": {
+      "regime_1": {
+        "color": "#000080",
+        "linestyle": "solid",
+        "width_pt": 0.9
+      },
+      "regime_2": {
+        "color": "#FF00FF",
+        "linestyle": "dashed",
+        "width_pt": 0.9
+      },
+      "regime_3": {
+        "color": "#008000",
+        "linestyle": "solid",
+        "width_pt": 0.9
+      },
+      "regime_4": {
+        "color": "#CC0000",
+        "linestyle": "dotted",
+        "width_pt": 0.9
+      },
+      "equal_probabilities": {
+        "color": "#000080",
+        "linestyle": "dashed",
+        "width_pt": 0.9
+      },
+      "ergodic_probabilities": {
+        "color": "#555555",
+        "linestyle": "dashdot",
+        "width_pt": 0.9
+      },
+      "iid_reference": {
+        "color": "#000000",
+        "linestyle": "solid",
+        "width_pt": 1.8
+      },
+      "steady_state": {
+        "color": "#FF0000",
+        "linestyle": "solid",
+        "width_pt": 0.9
+      },
+      "model_msih40": {
+        "color": "#000080",
+        "linestyle": "solid",
+        "width_pt": 0.9
+      },
+      "model_msih41": {
+        "color": "#FF00FF",
+        "linestyle": "dotted",
+        "width_pt": 0.9
+      },
+      "model_var1": {
+        "color": "#CC0000",
+        "linestyle": "dashed",
+        "width_pt": 0.9
+      },
+      "estimate": {
+        "color": "#000080",
+        "linestyle": "solid",
+        "width_pt": 0.9
+      },
+      "lower_bound": {
+        "color": "#000000",
+        "linestyle": "dotted",
+        "width_pt": 0.7
+      },
+      "upper_bound": {
+        "color": "#000000",
+        "linestyle": "dotted",
+        "width_pt": 0.7
+      },
+      "probability_series": {
+        "color": "#0000CC",
+        "linestyle": "solid",
+        "width_pt": 1.0
+      },
+      "fig5_regime1": {
+        "color": "#800040",
+        "linestyle": "solid",
+        "width_pt": 0.9
+      },
+      "fig5_regime2": {
+        "color": "#4B5FA8",
+        "linestyle": "solid",
+        "width_pt": 0.9
+      },
+      "fig5_regime3": {
+        "color": "#008000",
+        "linestyle": "dashed",
+        "width_pt": 0.9
+      },
+      "fig5_regime4": {
+        "color": "#FF00FF",
+        "linestyle": "dotted",
+        "width_pt": 0.9
+      },
+      "fig5_equal": {
+        "color": "#C89B3C",
+        "linestyle": "dotted",
+        "width_pt": 0.9
+      },
+      "fig5_ergodic": {
+        "color": "#555555",
+        "linestyle": "dashdot",
+        "width_pt": 0.9
+      },
+      "fig5_iid": {
+        "color": "#000000",
+        "linestyle": "solid",
+        "width_pt": 1.8
+      }
+    },
+    "dash_patterns": {
+      "dashed": [
+        5.0,
+        2.5
+      ],
+      "dotted": [
+        1.2,
+        1.8
+      ],
+      "dashdot": [
+        5.0,
+        2.0,
+        1.2,
+        2.0
+      ]
+    }
+  },
+  "stacked_areas": {
+    "asset_order": [
+      "Small stocks",
+      "Large stocks",
+      "Bonds",
+      "1-month T-bills"
+    ],
+    "styles": {
+      "Small stocks": {
+        "facecolor": "#F4CCCC",
+        "edgecolor": "#000000",
+        "hatch": "///",
+        "alpha": 1.0
+      },
+      "Large stocks": {
+        "facecolor": "#FF00FF",
+        "edgecolor": "#000000",
+        "hatch": "",
+        "alpha": 1.0
+      },
+      "Bonds": {
+        "facecolor": "#D9EAD3",
+        "edgecolor": "#000000",
+        "hatch": "xxx",
+        "alpha": 1.0
+      },
+      "1-month T-bills": {
+        "facecolor": "#FFFFFF",
+        "edgecolor": "#000000",
+        "hatch": "",
+        "alpha": 1.0
+      }
+    },
+    "boundary_width_pt": 0.45,
+    "sum_tolerance": 1e-06,
+    "y_ticks_percent": [
+      0,
+      10,
+      20,
+      30,
+      40,
+      50,
+      60,
+      70,
+      80,
+      90,
+      100
+    ],
+    "legend_position": "above_first_allocation_panel"
+  },
+  "table": {
+    "rules_pt": {
+      "top": 1.2,
+      "bottom": 1.2,
+      "panel_header_top": 0.5,
+      "panel_header_bottom": 0.5,
+      "header": 0.5,
+      "group": 0.4,
+      "continuation_top": 1.2
+    },
+    "vertical_rules": {
+      "width_pt": 0.5,
+      "Table_01": {
+        "left_boundary": true,
+        "between_numeric": false
+      },
+      "Table_02": {
+        "left_boundary": true,
+        "between_numeric": true
+      },
+      "Table_03": {
+        "left_boundary": false,
+        "between_numeric": false
+      },
+      "Table_04": {
+        "left_boundary": false,
+        "between_numeric": false
+      },
+      "Table_05": {
+        "left_boundary": true,
+        "between_numeric": false
+      }
+    },
+    "cell_padding_pt": {
+      "left": 4.0,
+      "right": 4.0,
+      "top": 2.2,
+      "bottom": 2.2
+    },
+    "row_leading_pt": 1.6,
+    "numeric_alignment_default": "center",
+    "numeric_alignment_overrides": {
+      "Table_03": "right"
+    },
+    "label_alignment": "left",
+    "label_alignment_overrides": {
+      "Table_02": "center",
+      "Table_03": "center"
+    },
+    "decimal_places_default": 3,
+    "decimal_places_by_statistic": {
+      "mean_excess_return": 4,
+      "standard_error": 4,
+      "correlation": 4,
+      "volatility": 4,
+      "transition_probability": 4,
+      "allocation_weight": 2,
+      "confidence_band_allocation": 3,
+      "realized_utility": 3,
+      "difference": 3,
+      "t_statistic": 3,
+      "total_return": 3,
+      "sharpe_ratio": 3,
+      "compensatory_variation": 3
+    },
+    "missing_tokens": {
+      "not_applicable": "---",
+      "not_available": "NA"
+    },
+    "blank_cell_policy": "forbidden",
+    "significance": {
+      "symbols": {
+        "0.10": "*",
+        "0.05": "**",
+        "0.01": "***"
+      },
+      "superscript": true,
+      "require_registered_test": true,
+      "note_template": "{symbol} denotes {level}% significance"
+    },
+    "bold": {
+      "allowed_only_with_registered_rule": true,
+      "rule_must_be_stated_in_note": true,
+      "apply_to": "cell"
+    },
+    "standard_error_style": "parentheses_adjacent_to_estimate",
+    "continuation": {
+      "repeat_caption": true,
+      "repeat_column_headers": true,
+      "repeat_panel_header": true,
+      "caption_template": "{kind} {number} (continued)",
+      "forbid_row_group_split": true
+    },
+    "panel_heading_style": "full_width_centered_with_rules_above_and_below",
+    "no_shading": true,
+    "no_vertical_rules_except_numeric_block": true
+  },
+  "statistics": {
+    "require_units": true,
+    "require_sample_definition": true,
+    "require_estimation_period": true,
+    "require_ci_definition": true,
+    "require_significance_rule": true,
+    "require_simulation_count_when_simulated": true,
+    "require_bootstrap_procedure": true,
+    "distinguish_observed_estimated_simulated_illustrative": true,
+    "do_not_claim_95pct_for_mean_plus_minus_1sd": true,
+    "do_not_infer_significance_from_visual_overlap": true,
+    "preserve_reference_comparator_direction": true
+  },
+  "notes": {
+    "placement": "immediately_below_table_or_figure",
+    "source_line": "italic",
+    "significance_line": "after_source_before_definition",
+    "definition_line": "after_significance",
+    "hanging_indent_pt": 10,
+    "size_pt": 8.5,
+    "font": "body",
+    "separator": " ",
+    "include_evidence_metadata": true
+  },
+  "export": {
+    "figure_formats": [
+      "png",
+      "pdf",
+      "svg"
+    ],
+    "table_formats": [
+      "pdf",
+      "tex",
+      "html",
+      "xlsx",
+      "csv",
+      "png_preview"
+    ],
+    "png_dpi": 600,
+    "preview_dpi": 150,
+    "vector": true,
+    "text_as_text": true,
+    "font_embedding": true,
+    "deterministic": true,
+    "metadata": {
+      "creator": "GT2006 Academic Presentation Standard",
+      "creation_date": null,
+      "hashsalt": "gt2006-academic-style"
+    },
+    "naming": {
+      "figure": "Figure_{number:02d}.{ext}",
+      "table": "Table_{number:02d}.{ext}"
+    },
+    "sidecars": [
+      "source_data.csv",
+      "spec.json",
+      "manifest.sha256"
+    ]
+  },
+  "qa": {
+    "acceptance_threshold": 95,
+    "criteria": {
+      "structural_fidelity": 0.3,
+      "typography_and_formatting": 0.2,
+      "series_styles_legends_and_annotation": 0.2,
+      "visual_readability_and_publication_quality": 0.15,
+      "data_integrity_and_reproducibility": 0.15
+    },
+    "hard_failures": [
+      "fabricated_statistic",
+      "misleading_axis",
+      "missing_material_panel",
+      "incorrect_legend",
+      "untraceable_empirical_result",
+      "smoothed_probabilities_labeled_as_filtered",
+      "mean_plus_minus_1sd_labeled_as_95pct_ci"
+    ],
+    "automated_checks": [
+      "text_bbox_overlap",
+      "text_clipping",
+      "minimum_font_size",
+      "missing_notes",
+      "stacked_area_sum",
+      "probability_bounds",
+      "legend_series_bijection",
+      "decimal_consistency",
+      "blank_cell_scan",
+      "bold_rule_declared",
+      "continuation_header_repeat",
+      "vector_text_present",
+      "deterministic_hash"
+    ],
+    "manual_checks": [
+      "title_and_panel_hierarchy",
+      "whitespace_balance",
+      "legibility_at_print_size",
+      "cross_panel_comparability",
+      "statistical_annotation_correctness"
+    ]
+  }
+}

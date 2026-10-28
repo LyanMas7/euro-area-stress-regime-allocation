@@ -1,0 +1,13 @@
+{
+  "figure": 6,
+  "title": "Terminal Net Asset Value by Strategy and Window",
+  "proof": false,
+  "page_size_in": [
+    8.5,
+    11.0
+  ],
+  "style_register_version": "1.0.0",
+  "files": {
+    "fig06_rq03_terminal_nav.png": "0d4809c94fe6ef03482f370686a494857d7404c58a2cbd38951931f280125c54"
+  }
+}

@@ -53,6 +53,13 @@ def table(df, cols, fmt=None):
     return out + "</tbody></table>"
 
 
+def fig_block(num, title, path, reading, limitation):
+    return ('<figure><a href="' + path + '"><img src="' + path + '" alt="' + title + '"></a>'
+            '<figcaption><b>Figure ' + str(num) + '.</b> ' + title + '</figcaption></figure>'
+            '<p><b>Interpretation.</b> ' + reading + '</p>'
+            '<p><b>Limitation.</b> ' + limitation + '</p>')
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--repo", default=".")
@@ -122,8 +129,13 @@ raises the miss rate to 5.74%; adding the confirmation pair buys {r1a.iloc[1].FN
 false-alarm rate; the exclusion pair then removes 27 alarms and costs 5.03 points of miss rate. The rule behaves as
 "threshold plus two filters", not as a vote.</p>
 {table(r1a, ["variant", "TP", "FN", "FP", "TN", "FNR", "FPR", "alarms"])}
-<figure><img src="assets/fig_rq01_fnr_fpr.png" alt="RQ01 FNR and FPR by phase and pooled">
-<figcaption>Left: development window by phase. Right: pooled decision, development against out of sample.</figcaption></figure>
+<figure><a href="assets/fig01_rq01_phase_error.png"><img src="assets/fig01_rq01_phase_error.png" alt="Identification error by phase"></a>
+<figcaption><b>Figure 1.</b> Identification Error by Phase: Miss Rate Against False-Alarm Rate</figcaption></figure>
+<p><b>Interpretation.</b> The rule is silent in the calm, entry and peak phases and pays for that silence in recovery, where
+43.78% of calm months raise an alarm. The pooled 10.05% and 24.25% average a rule that is either perfectly quiet or strongly
+over-sensitive.</p>
+<p><b>Limitation.</b> A development-window diagnostic; the out-of-sample score tape needed to repeat it is not part of this
+release.</p>
 <p>The rule is conservative while the economy is calm or entering stress — no misses in the pre-entry, entry and peak
 phases — and pays for that in recovery, where 43.8% of calm months raise an alarm. Out of sample the false-alarm rate is
 stable ({oos.FPR:.2f}%) while the miss rate rises to {oos.FNR:.2f}%: the rule lost sensitivity, not discipline.
@@ -139,15 +151,20 @@ that requires independent factors to agree. In all three, <b>Individual</b> move
 combination actually thresholded. A slow <i>Long</i> system feeds entry; a five-vote <i>Short</i> system, whose last vote is
 a last-short flag, feeds exit and bottom.</p>
 {table(r2, ["task", "period", "threshold", "n", "TP", "FN", "FP", "TN", "FNR", "FPR"])}
-<figure><img src="assets/fig_rq02_fnr_fpr.png" alt="RQ02 entry, exit and bottom results">
-<figcaption>Entry and exit miss rates and false-alarm rates by window; bottom-zone hit rate.</figcaption></figure>
+<figure><a href="assets/fig02_rq02_transition_error.png"><img src="assets/fig02_rq02_transition_error.png" alt="Entry and exit error and bottom-zone hit rate"></a>
+<figcaption><b>Figure 2.</b> Forecasting Error for Entry and Exit, and the Asset-Bottom Hit Rate</figcaption></figure>
+<p><b>Interpretation.</b> Entry buys its low miss rate with false alarms in development and cannot be scored on false alarms out
+of sample, where all 14 observations are positives. Exit degrades to 28.57% and 45.71%. The bottom zone keeps the trough inside
+the zone in one development forecast in four and one evaluation forecast in fifteen.</p>
+<p><b>Limitation.</b> Two of the five rates are undefined rather than zero, and the evaluation block rests on 14, 91 and 90
+scorable observations.</p>
 <p>Both models are calibrated towards recall: no episode is missed in development, at the cost of a false alarm in
 roughly one in four calm observations. Out of sample entry keeps a low miss rate (14.29%) but its false-alarm rate
 <b>cannot be defined</b> — all 14 scorable observations are positives, so an empty denominator is reported as missing,
 never as zero. Exit degrades on both dimensions (28.57% and 45.71%). The bottom rule hits
 {r2b[r2b.period == 'DEV'].iloc[0].n_hit:.0f} of {r2b[r2b.period == 'DEV'].iloc[0].n_issued_matured:.0f} matured forecasts in development (23.33%) with a negative median lead
-time, meaning it identifies the zone but on average after the trough; the out-of-sample block is sealed by the research
-contract and is not scored at all.</p>
+time, meaning it identifies the zone but on average after the trough. Out of sample the block is scored: 6 of 90 matured
+forecasts contained the trough (6.67%), against 14 of 60 (23.33%) in development.</p>
 
 <h2>4 · RQ03 — state-dependent allocation</h2>
 <p>The Main Model is a four-state machine in which the <i>permission</i> to restructure changes with the state. Normal
@@ -159,17 +176,31 @@ and buying back higher, at the cost of 596 of 781 development weeks spent in tha
 activates the only fully invested state — equity 100% of NAV, held — after which a profit ladder of four 20% trims at
 +8%, +16%, +25% and +40%, a four-week cooldown, a 52-week minimum hold and a 10–15% trail returns the portfolio through
 the post-exit band (S4) to normal, with 26 consecutive normal weeks re-arming the cycle.</p>
-<figure><img src="assets/fig_rq03_state_machine.png" alt="State transitions of the restructuring mechanism">
-<figcaption>State transitions and the allocation rule attached to each state.</figcaption></figure>
+<figure><a href="assets/fig03_rq03_state_machine.png"><img src="assets/fig03_rq03_state_machine.png" alt="Restructuring states and allocation rules"></a>
+<figcaption><b>Figure 3.</b> Restructuring States and the Allocation Rule Attached to Each State</figcaption></figure>
+<p><b>Interpretation.</b> The diagram locates the lock: between short confirmation and bottom confirmation the band allocator is
+withdrawn and only the lock rule applies.</p>
+<p><b>Limitation.</b> The boxes state the rules as executed; parameter values are in the register below.</p>
 <p>Four constraints act on every target: a hard weekly expected-shortfall cap of 2%, the state band clamps, a zero floor on
 cash (so no leverage), and a 10 basis point one-way transaction cost on realised turnover. Two parameters are often
 assumed to be active and are not: the risk-tolerance scaling table is disabled, and the probability branch of the cycle
 reset is inert by construction, so the cycle is re-armed by time rather than by a probability condition.</p>
+<figure><a href="assets/fig04_rq03_allocation.png"><img src="assets/fig04_rq03_allocation.png" alt="Portfolio composition and regime evolution, 2005-2024"></a>
+<figcaption><b>Figure 4.</b> Portfolio Composition and Regime Evolution, 2005-2024</figcaption></figure>
+<p><b>Interpretation.</b> The policy is equity-heavy by design: the three equity sleeves hold about three quarters of NAV for most
+of the period, cash reaches 100% in ten weeks only, and the regime band shows a cycle rather than a one-way de-risking. The lock
+accounts for 783 of 1,041 weeks.</p>
+<p><b>Limitation.</b> Weekly weights are re-based to 100% for display, and the band records the states the executed configuration
+produced.</p>
 <h3>Parameter register</h3>
 {table(par, ["Parameter / Threshold", "Actual Value", "Unit", "Class"])}
-<figure><img src="assets/fig_rq03_nav_dev_oos.png" alt="Main model NAV against five benchmarks and 100% equity">
-<figcaption>Upper panel: development window, benchmarks at terminal value. Lower panel: out of sample, benchmarks weekly.
-Shading marks the four lifecycle stages.</figcaption></figure>
+<figure><a href="assets/fig05_rq03_nav_paths.png"><img src="assets/fig05_rq03_nav_paths.png" alt="Main model NAV against five benchmarks and full equity"></a>
+<figcaption><b>Figure 5.</b> Net Asset Value of the Main Model Against Five Benchmarks and Full Equity</figcaption></figure>
+<p><b>Interpretation.</b> The main model compounds 3.9015 in development and 1.8059 in evaluation, against 2.5960 and 1.2611 for
+full equity and 1.678/1.087 for equal weights. The gap opens in the drawdowns, where the policy keeps equity and the benchmarks
+do not.</p>
+<p><b>Limitation.</b> Development benchmarks are terminal values because only end-of-window levels exist; the evaluation window
+was open when the model was chosen.</p>
 {table(r3, ["period", "weeks", "POLICY", "EW", "IVOL", "MVP", "ERC", "MaxDiv", "EQUITY100"],
        {"weeks": "{:.0f}", "POLICY": "{:.4f}", "EW": "{:.4f}", "IVOL": "{:.4f}", "MVP": "{:.4f}", "ERC": "{:.4f}", "MaxDiv": "{:.4f}", "EQUITY100": "{:.4f}"})}
 <p>The model beats all five passive benchmarks and the fully invested equity portfolio in both windows: 3.9015 against
@@ -178,9 +209,12 @@ over the continuous path. The premium is paid for with risk: maximum drawdown of
 expected shortfall of the six strategies in both windows. This is a return engine with a defensive overlay, not a
 risk-control device. Benchmarks are passive construction rules and are not subject to the lock.</p>
 {table(risk, ["strategy", "MDD_DEV", "MDD_OOS", "ES95_DEV", "ES95_OOS"], {"MDD_DEV": "{:.4f}", "MDD_OOS": "{:.4f}", "ES95_DEV": "{:.4f}", "ES95_OOS": "{:.4f}"})}
-<figure><img src="assets/fig_rq03_terminal.png" alt="Terminal NAV by strategy">
-<figcaption>Terminal NAV by strategy in each window. The equity-only reference is the honest yardstick for a portfolio that
-carries more than 70% equity on average.</figcaption></figure>
+<figure><a href="assets/fig06_rq03_terminal_nav.png"><img src="assets/fig06_rq03_terminal_nav.png" alt="Terminal NAV by strategy and window"></a>
+<figcaption><b>Figure 6.</b> Terminal Net Asset Value by Strategy and Window</figcaption></figure>
+<p><b>Interpretation.</b> Terminal NAV ranks the main model first in both windows, with full equity second in both and the five
+passive rules near one.</p>
+<p><b>Limitation.</b> Terminal NAV ignores the path: the premium is earned with the deepest drawdown and the highest weekly
+expected shortfall of the group.</p>
 
 <h2>5 · Conclusions</h2>
 <p><b>Identification is the reliable link:</b> 10% miss rate at a 25% false-alarm rate in development, with a stable
