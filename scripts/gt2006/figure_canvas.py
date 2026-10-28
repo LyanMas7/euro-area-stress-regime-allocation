@@ -24,7 +24,7 @@ PAGE_SIZES = REG["page"]["sizes_in"]
 class FigurePage:
     def __init__(
         self,
-        number: int,
+        number: int | None,
         title: str,
         paragraph: str | None = None,
         equation: str | None = None,
@@ -48,26 +48,28 @@ class FigurePage:
         self._draw_heading(paragraph, equation, top_in)
         if proof and banner:
             self.add_banner(banner)
-        self.add_page_number()
+        if self.number is not None:
+            self.add_page_number()
 
     # ------------------------------------------------------------------ heading
     def _draw_heading(self, paragraph: str | None, equation: str | None, top_in: float) -> None:
         display = "Times New Roman"
         x_center = 0.5
         y = top_in / self.H
-        self.fig.text(
-            x_center,
-            1 - y,
-            f"Figure {self.number}",
-            ha="center",
-            va="top",
-            fontsize=13,
-            fontweight="bold",
-            fontfamily=display,
-            color="black",
-        )
+        if self.number is not None:
+            self.fig.text(
+                x_center,
+                1 - y,
+                f"Figure {self.number}",
+                ha="center",
+                va="top",
+                fontsize=13,
+                fontweight="bold",
+                fontfamily=display,
+                color="black",
+            )
+            y += 0.24 / self.H
         title_lines = textwrap.wrap(self.title, 78)
-        y += 0.24 / self.H
         self.fig.text(
             x_center,
             1 - y,
@@ -405,6 +407,7 @@ class FigurePage:
         data: dict | None = None,
         spec: dict | None = None,
         close: bool = True,
+        compact: bool = False,
     ) -> dict:
         out_dir = Path(out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -423,7 +426,10 @@ class FigurePage:
                 "ModDate": fixed_date,
             }
             if fmt == "png":
-                self.fig.savefig(path, dpi=REG["export"]["png_dpi"], facecolor="white", metadata={"Software": "GT2006 Academic Presentation Standard"})
+                self.fig.savefig(path, dpi=REG["export"]["png_dpi"], facecolor="white",
+                                 bbox_inches="tight" if compact else None,
+                                 pad_inches=0.12 if compact else 0.1,
+                                 metadata={"Software": "GT2006 Academic Presentation Standard"})
             elif fmt == "pdf":
                 self.fig.savefig(path, format="pdf", facecolor="white", metadata=metadata)
             elif fmt == "svg":

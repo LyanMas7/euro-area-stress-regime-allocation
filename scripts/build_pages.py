@@ -39,7 +39,7 @@ code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:94%}
 
 
 def table(df, cols, fmt=None):
-    out = "<table><thead><tr>" + "".join(f"<th>{c}</th>" for c in cols) + "</tr></thead><tbody>"
+    out = '<div class="tablewrap"><table class="thr"><thead><tr>' + "".join(f"<th>{c}</th>" for c in cols) + "</tr></thead><tbody>"
     for _, row in df.iterrows():
         out += "<tr>"
         for c in cols:
@@ -50,8 +50,22 @@ def table(df, cols, fmt=None):
                 cell = str(v)
             out += f"<td>{cell}</td>"
         out += "</tr>"
-    return out + "</tbody></table>"
+    return out + "</tbody></table></div>"
 
+
+EXTRA_CSS = """
+figure{margin:14px 0 18px}
+figure img{width:100%;height:auto;display:block;border:1px solid #e5e5e5}
+figcaption{font-size:.85rem;color:#333;margin-top:6px;line-height:1.35}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:10px 0 16px;border:1px solid #e5e5e5}
+table.thr{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff}
+table.thr th{background:#f2f2f2;text-align:left;font-weight:600;padding:6px 7px;border-bottom:1px solid #ccc;white-space:nowrap}
+table.thr td{padding:5px 7px;border-bottom:1px solid #eee;vertical-align:top}
+table.thr td.num{white-space:nowrap;font-variant-numeric:tabular-nums}
+table.thr tr.inert td{color:#666;background:#fafafa}
+h4{margin:18px 0 6px;font-size:1rem}
+@media(max-width:640px){table.thr{font-size:12px}figure{margin:10px 0 14px}}
+"""
 
 def fig_block(num, title, path, reading, limitation):
     return ('<figure><a href="' + path + '"><img src="' + path + '" alt="' + title + '"></a>'
@@ -81,11 +95,12 @@ def main():
     d3 = r3[r3.period == "DEV"].iloc[0]; o3 = r3[r3.period == "OOS"].iloc[0]
     dev = r1s[r1s.period == "DEV"].iloc[0]; oos = r1s[r1s.period == "OOS"].iloc[0]
 
+    appendix_html = (R / "results/appendix.html").read_text(encoding="utf-8")
     html = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Stress identification, transition forecasting and state-dependent allocation</title>
-<style>{CSS}</style></head><body><div class="wrap">
+<style>{CSS}{EXTRA_CSS}</style></head><body><div class="wrap">
 
 <div class="meta">Research summary · seven euro-area countries · 2005–2024</div>
 <h1>Financial stress identification, transition forecasting and state-dependent portfolio allocation</h1>
@@ -130,7 +145,7 @@ false-alarm rate; the exclusion pair then removes 27 alarms and costs 5.03 point
 "threshold plus two filters", not as a vote.</p>
 {table(r1a, ["variant", "TP", "FN", "FP", "TN", "FNR", "FPR", "alarms"])}
 <figure><a href="assets/fig01_rq01_phase_error.png"><img src="assets/fig01_rq01_phase_error.png" alt="Identification error by phase"></a>
-<figcaption><b>Figure 1.</b> Identification Error by Phase: Miss Rate Against False-Alarm Rate</figcaption></figure>
+<figcaption>Financial Stress Identification - DEV vs OOS</figcaption></figure>
 <p><b>Interpretation.</b> The rule is silent in the calm, entry and peak phases and pays for that silence in recovery, where
 43.78% of calm months raise an alarm. The pooled 10.05% and 24.25% average a rule that is either perfectly quiet or strongly
 over-sensitive.</p>
@@ -152,7 +167,7 @@ combination actually thresholded. A slow <i>Long</i> system feeds entry; a five-
 a last-short flag, feeds exit and bottom.</p>
 {table(r2, ["task", "period", "threshold", "n", "TP", "FN", "FP", "TN", "FNR", "FPR"])}
 <figure><a href="assets/fig02_rq02_transition_error.png"><img src="assets/fig02_rq02_transition_error.png" alt="Entry and exit error and bottom-zone hit rate"></a>
-<figcaption><b>Figure 2.</b> Forecasting Error for Entry and Exit, and the Asset-Bottom Hit Rate</figcaption></figure>
+<figcaption>Entry and Exit Forecasting Performance</figcaption></figure>
 <p><b>Interpretation.</b> Entry buys its low miss rate with false alarms in development and cannot be scored on false alarms out
 of sample, where all 14 observations are positives. Exit degrades to 28.57% and 45.71%. The bottom zone keeps the trough inside
 the zone in one development forecast in four and one evaluation forecast in fifteen.</p>
@@ -177,7 +192,7 @@ activates the only fully invested state — equity 100% of NAV, held — after w
 +8%, +16%, +25% and +40%, a four-week cooldown, a 52-week minimum hold and a 10–15% trail returns the portfolio through
 the post-exit band (S4) to normal, with 26 consecutive normal weeks re-arming the cycle.</p>
 <figure><a href="assets/fig03_rq03_state_machine.png"><img src="assets/fig03_rq03_state_machine.png" alt="Restructuring states and allocation rules"></a>
-<figcaption><b>Figure 3.</b> Restructuring States and the Allocation Rule Attached to Each State</figcaption></figure>
+<figcaption>Restructuring States and Allocation Rules</figcaption></figure>
 <p><b>Interpretation.</b> The diagram locates the lock: between short confirmation and bottom confirmation the band allocator is
 withdrawn and only the lock rule applies.</p>
 <p><b>Limitation.</b> The boxes state the rules as executed; parameter values are in the register below.</p>
@@ -186,7 +201,7 @@ cash (so no leverage), and a 10 basis point one-way transaction cost on realised
 assumed to be active and are not: the risk-tolerance scaling table is disabled, and the probability branch of the cycle
 reset is inert by construction, so the cycle is re-armed by time rather than by a probability condition.</p>
 <figure><a href="assets/fig04_rq03_allocation.png"><img src="assets/fig04_rq03_allocation.png" alt="Portfolio composition and regime evolution, 2005-2024"></a>
-<figcaption><b>Figure 4.</b> Portfolio Composition and Regime Evolution, 2005-2024</figcaption></figure>
+<figcaption>Six-Asset Capital Allocation, 2005-2024</figcaption></figure>
 <p><b>Interpretation.</b> The policy is equity-heavy by design: the three equity sleeves hold about three quarters of NAV for most
 of the period, cash reaches 100% in ten weeks only, and the regime band shows a cycle rather than a one-way de-risking. The lock
 accounts for 783 of 1,041 weeks.</p>
@@ -195,7 +210,7 @@ produced.</p>
 <h3>Parameter register</h3>
 {table(par, ["Parameter / Threshold", "Actual Value", "Unit", "Class"])}
 <figure><a href="assets/fig05_rq03_nav_paths.png"><img src="assets/fig05_rq03_nav_paths.png" alt="Main model NAV against five benchmarks and full equity"></a>
-<figcaption><b>Figure 5.</b> Net Asset Value of the Main Model Against Five Benchmarks and Full Equity</figcaption></figure>
+<figcaption>Main Model NAV Against Five Benchmarks and Full Equity</figcaption></figure>
 <p><b>Interpretation.</b> The main model compounds 3.9015 in development and 1.8059 in evaluation, against 2.5960 and 1.2611 for
 full equity and 1.678/1.087 for equal weights. The gap opens in the drawdowns, where the policy keeps equity and the benchmarks
 do not.</p>
@@ -210,7 +225,7 @@ expected shortfall of the six strategies in both windows. This is a return engin
 risk-control device. Benchmarks are passive construction rules and are not subject to the lock.</p>
 {table(risk, ["strategy", "MDD_DEV", "MDD_OOS", "ES95_DEV", "ES95_OOS"], {"MDD_DEV": "{:.4f}", "MDD_OOS": "{:.4f}", "ES95_DEV": "{:.4f}", "ES95_OOS": "{:.4f}"})}
 <figure><a href="assets/fig06_rq03_terminal_nav.png"><img src="assets/fig06_rq03_terminal_nav.png" alt="Terminal NAV by strategy and window"></a>
-<figcaption><b>Figure 6.</b> Terminal Net Asset Value by Strategy and Window</figcaption></figure>
+<figcaption>Terminal NAV by Strategy and Window</figcaption></figure>
 <p><b>Interpretation.</b> Terminal NAV ranks the main model first in both windows, with full equity second in both and the five
 passive rules near one.</p>
 <p><b>Limitation.</b> Terminal NAV ignores the path: the premium is earned with the deepest drawdown and the highest weekly
@@ -231,6 +246,9 @@ signal.</p>
 not redistributed. Costs are fixed at 10 basis points one-way with no market impact, no borrow cost and no liquidity
 constraint; the sample covers seven countries and one out-of-sample shock.</p>
 <p class="note">Research output, not an investment recommendation.</p>
+<h2>7 · Complete threshold and assumption appendix</h2>
+<p>Every active threshold, rule and parameter used by the three research questions, in the standard form Parameter / Selected value / Unit / Activation condition / Interpretation. Values are copied from the executed configuration or the selected-threshold files and nothing is rounded or inferred. Rows whose rule lives in code cite the file and line. The audit at the end reports every value that could not be traced, every duplicated label and every requested object that is not implemented.</p>
+{appendix_html}
 </div></body></html>"""
     (docs / "index.html").write_text(html, encoding="utf-8")
     (docs / ".nojekyll").write_text("", encoding="utf-8")

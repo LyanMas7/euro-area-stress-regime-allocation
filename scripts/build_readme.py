@@ -33,9 +33,9 @@ def table(df, cols, fmt=None, dash="—"):
     return out
 
 
-def figure_block(num, title, path, reading, limitation):
-    """GT2006 exhibit block: title, chart, then interpretation and limitation beneath it."""
-    return (f"**Figure {num}. {title}**\n\n![Figure {num}]({path})\n\n"
+def figure_block(title, path, reading, limitation):
+    """Exhibit block: descriptive title, chart, then interpretation and limitation beneath it."""
+    return (f"**{title}**\n\n![{title}]({path})\n\n"
             f"**Interpretation.** {reading}\n\n**Limitation.** {limitation}\n")
 
 
@@ -92,6 +92,7 @@ def main():
     dev_terms = r3p[(r3p.period == "DEV") & (r3p.phase != "ALL")].copy()
     dev_terms["Stage"] = dev_terms.phase.map(PHASE_EN)
 
+    appendix_md = (R / "results/appendix.md").read_text(encoding="utf-8")
     readme = f"""# Financial stress identification, transition forecasting and state-dependent portfolio allocation
 
 **A three-stage decision chain for seven euro-area countries — evidence from a development and an out-of-sample window**
@@ -172,7 +173,7 @@ is almost always stressed needs a threshold close to one to separate its calm mo
 months needs a very low one. Using a single common threshold would either silence the low-stress countries or turn the
 high-stress ones permanently on.
 
-{figure_block(1, "Identification Error by Phase: Miss Rate Against False-Alarm Rate",
+{figure_block("Identification Error by Phase: Miss Rate Against False-Alarm Rate",
                 "results/fig01_rq01_phase_error.png",
                 "The rule is silent in the calm, entry and peak phases and pays for that silence in recovery, where "
                 "43.78% of calm months raise an alarm. Read the phases rather than the pooled line: the pooled 10.05% "
@@ -295,7 +296,7 @@ reproducible operating points are:
 
 {table(r2a, ["variant", "DEV_FNR", "DEV_FPR", "OOS_FNR", "OOS_FPR", "status"])}
 
-{figure_block(2, "Forecasting Error for Entry and Exit, and the Asset-Bottom Hit Rate",
+{figure_block("Forecasting Error for Entry and Exit, and the Asset-Bottom Hit Rate",
               "results/fig02_rq02_transition_error.png",
               "Entry buys its low miss rate with false alarms in development and cannot be scored on false alarms out "
               "of sample, where all 14 observations are positives. Exit is the opposite: quiet in development, then "
@@ -339,7 +340,7 @@ honest yardstick for a strategy whose average equity share is above 70%.
 The Main Model is not a static weighting rule with a filter on top. It is a four-state machine in which the *permission*
 to restructure changes with the state. The diagram below is the complete transition structure.
 
-{figure_block(3, "Restructuring States and the Allocation Rule Attached to Each State",
+{figure_block("Restructuring States and the Allocation Rule Attached to Each State",
                 "results/fig03_rq03_state_machine.png",
                 "The diagram locates the lock precisely: between short confirmation and bottom confirmation the band "
                 "allocator is withdrawn and only the lock rule applies, which is why the policy spends most of its "
@@ -395,7 +396,7 @@ the stop completes, the model passes through a post-exit state in which the band
 equity floor, and returns to the normal state once the phase clock leaves the exit phase. Twenty-six consecutive normal
 weeks re-arm the bottom supplement for a new cycle.
 
-{figure_block(4, "Portfolio Composition and Regime Evolution, 2005-2024",
+{figure_block("Portfolio Composition and Regime Evolution, 2005-2024",
                 "results/fig04_rq03_allocation.png",
                 "The policy is equity-heavy by design: the three equity sleeves hold roughly three quarters of NAV for "
                 "most of the period, cash reaches 100% in ten weeks only, and the regime band shows a cycle rather "
@@ -406,15 +407,11 @@ weeks re-arm the bottom supplement for a new cycle.
 
 ### 4.3 Parameter register
 
-Every value below is read from the configuration the executed policy used. "Fixed assumption" means a design choice
-that was not fitted; "calibrated" means a value chosen on the development window; "calculated" means a derived quantity.
-
-{table(par, ["Parameter / Threshold", "Actual Value", "Unit", "Activation Condition", "Effect on Portfolio", "Class"])}
-
-Two parameters deserve explicit disclosure because they are often assumed to be active. The risk-tolerance scaling table
-is **disabled** (`off`), so position size is not rescaled by an investor risk-aversion parameter. The cycle-reset
-probability branch is **inert** by construction — its normal-probability threshold is set above 1 — so the cycle is
-re-armed by time (26 normal weeks) and not by a probability condition.
+The complete risk, weight, restructuring and trading configuration is listed once, in Appendix C, with the source of
+every value. Two parameters deserve disclosure here because they are often assumed to be active. Risk-tolerance scaling
+is **disabled**, so position size is not rescaled by an investor risk-aversion parameter. The cycle-reset probability
+branch is **inert** by construction, because its normal-probability threshold is set above one, so the cycle is re-armed
+by time (26 normal weeks) and not by a probability condition.
 
 ### 4.4 Development window (2005–2019)
 
@@ -448,7 +445,7 @@ was designed for; a fifteen-year window with two large drawdowns is a favourable
 
 {table(r3, ["period", "weeks", "POLICY", "EW", "IVOL", "MVP", "ERC", "MaxDiv", "EQUITY100"], {"weeks": "{:.0f}", "POLICY": "{:.4f}", "EW": "{:.4f}", "IVOL": "{:.4f}", "MVP": "{:.4f}", "ERC": "{:.4f}", "MaxDiv": "{:.4f}", "EQUITY100": "{:.4f}"})}
 
-{figure_block(5, "Net Asset Value of the Main Model Against Five Benchmarks and Full Equity",
+{figure_block("Net Asset Value of the Main Model Against Five Benchmarks and Full Equity",
                 "results/fig05_rq03_nav_paths.png",
                 "The main model compounds 3.9015 in development and 1.8059 in evaluation, against 2.5960 and 1.2611 "
                 "for full equity and 1.678/1.087 for equal weights. The gap opens in the two drawdowns, where the "
@@ -471,7 +468,7 @@ time.
 objective is to minimise drawdown would reject it; an investor whose objective is terminal wealth subject to an
 acceptance of large interim losses would not.
 
-{figure_block(6, "Terminal Net Asset Value by Strategy and Window",
+{figure_block("Terminal Net Asset Value by Strategy and Window",
                 "results/fig06_rq03_terminal_nav.png",
                 "Terminal NAV ranks the main model first in both windows, with full equity second in both and the five "
                 "passive rules left near one. The ordering does not flip between windows, which is the relevant test "
@@ -485,7 +482,7 @@ but execution is simulated at a fixed 10 basis points with no market impact, no 
 
 ---
 
-## 5. Conclusions
+## 5. Conclusions and limitations
 
 1. **Identification is the reliable link.** A layered rule — country threshold, joint confirmation, one exclusion pair —
    reaches a 10% miss rate at a 25% false-alarm rate in development, and keeps the false-alarm rate out of sample while
@@ -500,6 +497,15 @@ but execution is simulated at a fixed 10 basis points with no market impact, no 
    life in a defensive posture and still captures the recovery.
 5. **What the evidence does not support.** It does not support independent out-of-sample validation, deployment without
    an owner-approved risk budget, or use of the bottom forecast as a timing signal.
+
+### 5.1 Limitations and status
+
+* **Status.** Research output, not an investment product. No statement here is a recommendation.
+* **Selection.** The out-of-sample window informed model choice; the 2020-2024 results are descriptive, not confirmatory.
+* **Labels.** ESRB stress labels are an evaluation benchmark only; a missing label excludes the observation from scoring and is never treated as calm.
+* **Scope.** Seven euro-area countries. The eighth could not be added because of a data-contract conflict.
+* **Costs and execution.** Fixed 10 basis points one-way, no market impact, no borrow cost, no liquidity constraint.
+* **Reproducibility of RQ01 and RQ02.** The registered identification rule cannot be recomputed from the tape shipped here, and the registered RQ02 operating points are not the ones the executed path selects; both facts are documented in the appendix audit rather than smoothed over.
 
 ---
 
@@ -524,18 +530,20 @@ python scripts/build_presentation_assets.py --params <params.json> \\
     --ledger-dir results/rq03_standard --out results
 ```
 
+`python scripts/build_appendix.py --repo .` regenerates the appendix, its machine-readable inventory (`results/THRESHOLD_INVENTORY.json`) and the audit table.
+
 `THRESHOLD/` holds every selected value: the seven country thresholds, the entry and exit operating points and the
 portfolio standard. No threshold is inferred at run time and no dataset is redistributed with the repository.
 
-## 7. Data, limitations and status
+## 7. Complete threshold and assumption appendix
 
-* **Status.** Research output, not an investment product. No statement here is a recommendation.
-* **Labels.** ESRB stress labels are an evaluation benchmark only; where a label is missing the observation is excluded
-  from scoring and never treated as calm.
-* **Costs and execution.** Fixed 10 basis points one-way, no market impact, no borrow cost, no liquidity constraint.
-* **Scope.** Seven euro-area countries. The eighth country could not be added because of a data-contract conflict, so the
-  results do not generalise beyond this group.
-* **Selection.** The out-of-sample window informed model choice; treat the 2020–2024 results as descriptive.
+Every active threshold, rule and parameter used by the three research questions is listed below in the standard form
+Parameter / Selected value / Unit / Activation condition / Interpretation. Values are copied from the executed
+configuration or the selected-threshold files and nothing is rounded or inferred. Rows whose rule lives in code cite the
+file and line; the audit at the end of the appendix reports every value that could not be traced, every duplicated label
+and every requested object that is not implemented.
+
+{appendix_md}
 """
     (R / "README.md").write_text(readme, encoding="utf-8")
     print("README bytes:", len(readme), "| lines:", len(readme.splitlines()))

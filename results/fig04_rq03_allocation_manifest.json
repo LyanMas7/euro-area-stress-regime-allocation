@@ -1,6 +1,6 @@
 {
-  "figure": 4,
-  "title": "Portfolio Composition and Regime Evolution, 2005-2024",
+  "figure": null,
+  "title": "Six-Asset Capital Allocation, 2005-2024",
   "proof": false,
   "page_size_in": [
     8.5,
@@ -8,6 +8,6 @@
   ],
   "style_register_version": "1.0.0",
   "files": {
-    "fig04_rq03_allocation.png": "17374629772fc0f183514a9307a0fe53ea949d67af8199e8a614a6311ffb2850"
+    "fig04_rq03_allocation.png": "d5de105eb75ebb8d3e6bc162cc1f5c8d16bcb8b4a7d83bda4a89f5b7f1c11ec0"
   }
 }

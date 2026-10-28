@@ -74,6 +74,21 @@ def qa_overlap(page: FigurePage) -> list[str]:
             if a.overlaps(b):
                 if (min(a.x1, b.x1) - max(a.x0, b.x0)) > 1.0 and (min(a.y1, b.y1) - max(a.y0, b.y0)) > 1.0:
                     hits.append(f"{boxes[i][0]!r} {where(a)} x {boxes[j][0]!r} {where(b)}")
+    for lg in page.fig.legends:
+        lb = lg.get_window_extent(r)
+        own = {id(t) for t in lg.get_texts()}
+        for t in page.fig.findobj(matplotlib.text.Text):
+            if id(t) in own or not t.get_text().strip() or not t.get_visible():
+                continue
+            bb = t.get_window_extent(renderer=r)
+            if bb.width <= 0 or bb.height <= 0:
+                continue
+            if (min(lb.x1, bb.x1) - max(lb.x0, bb.x0)) > 1.0 and (min(lb.y1, bb.y1) - max(lb.y0, bb.y0)) > 1.0:
+                hits.append(f"legend {where(lb)} x {t.get_text()[:28]!r} {where(bb)}")
+        for ax in page.fig.axes:
+            ab = ax.get_window_extent(r)
+            if (min(lb.x1, ab.x1) - max(lb.x0, ab.x0)) > 1.0 and (min(lb.y1, ab.y1) - max(lb.y0, ab.y0)) > 1.0:
+                hits.append(f"legend {where(lb)} overlaps a plotting area {where(ab)}")
     return hits
 
 
@@ -88,35 +103,53 @@ def finish(page: FigurePage, out: Path, stem: str, note: str, source: str, y_not
     page.fig.canvas.draw()
     hits = qa_overlap(page)
     print(f"[qa] {stem}: {'PASS' if not hits else 'FAIL ' + str(hits[:4])}")
-    page.save(out, stem, formats=("png",))
+    page.save(out, stem, formats=("png",), compact=True)
     matplotlib.pyplot.close(page.fig)
 
 
-def fig01(d: pd.DataFrame, out: Path) -> None:
-    page = FigurePage(number=1, title="Identification Error by Phase: Miss Rate Against False-Alarm Rate",
-                      paragraph="Grouped bars report the miss rate and the false-alarm rate of the selected "
-                                "identification rule inside each of the six phase states, development window "
-                                "2005-2019, in per cent. Bars within a phase belong to the same sample, so the "
-                                "two rates must be read together.")
-    ax = page.add_axes(0.95, 2.35, 6.60, 3.55)
-    s = d[d.phase != "ALL"].set_index("phase").reindex(PHASES)
+def fig01(d: pd.DataFrame, summary: pd.DataFrame, out: Path) -> None:
+    page = FigurePage(number=None, title="Financial Stress Identification - DEV vs OOS", top_in=0.80,
+                      paragraph="The rule combines a country threshold on the boosted-tree stress probability with two "
+                                "joint-packet filters. Left: miss rate and false-alarm rate inside each phase of the "
+                                "development window. Right: the pooled decision in development and in evaluation, on the "
+                                "same scale.")
+    ax = page.add_axes(0.95, 2.30, 3.95, 3.20)
+    s1 = d[d.phase != "ALL"].set_index("phase").reindex(PHASES)
     x = np.arange(len(PHASES)); w = 0.36
-    ax.bar(x - w / 2, s.FNR.values, w, facecolor="#DCE6F1", edgecolor="#000080", linewidth=0.5)
-    ax.bar(x + w / 2, s.FPR.values, w, facecolor="#F4CCCC", edgecolor="#C00000", linewidth=0.5)
+    ax.bar(x - w / 2, s1.FNR.values, w, facecolor="#DCE6F1", edgecolor="#000080", linewidth=0.5)
+    ax.bar(x + w / 2, s1.FPR.values, w, facecolor="#F4CCCC", edgecolor="#C00000", linewidth=0.5)
+    for i, (a, b) in enumerate(zip(s1.FNR.values, s1.FPR.values)):
+        ax.text(i - w / 2, a + 1.0, f"{a:.2f}", ha="center", va="bottom", fontsize=7.5, fontfamily="Garamond")
+        ax.text(i + w / 2, b + 1.0, f"{b:.2f}", ha="center", va="bottom", fontsize=7.5, fontfamily="Garamond")
     page.format_axis(ax, xlabel="Phase state", ylabel="Per cent of the evaluation sample", ylim=(0, 55),
-                     yticks=[0, 10, 20, 30, 40, 50], xticks=list(x), xticklabels=PHASE_LABEL, rotation=0)
+                     yticks=[0, 10, 20, 30, 40, 50], xticks=list(x), xticklabels=PHASE_LABEL,
+                     rotation=35, tick_size=7.5)
+    ax.set_title("By phase, development window", fontsize=8.5, fontweight="bold", fontfamily="Garamond", pad=5)
+
+    ax2 = page.add_axes(5.35, 2.30, 2.20, 3.20)
+    pool = summary.set_index("period").reindex(["DEV", "OOS"])
+    yy = np.arange(2)
+    ax2.bar(yy - w / 2, pool.FNR.values, w, facecolor="#DCE6F1", edgecolor="#000080", linewidth=0.5)
+    ax2.bar(yy + w / 2, pool.FPR.values, w, facecolor="#F4CCCC", edgecolor="#C00000", linewidth=0.5)
+    for i, (a, b) in enumerate(zip(pool.FNR.values, pool.FPR.values)):
+        ax2.text(i - w / 2, a + 1.0, f"{a:.2f}", ha="center", va="bottom", fontsize=7.5, fontfamily="Garamond")
+        ax2.text(i + w / 2, b + 1.0, f"{b:.2f}", ha="center", va="bottom", fontsize=7.5, fontfamily="Garamond")
+    page.format_axis(ax2, xlabel="Pooled decision", ylabel="Per cent", ylim=(0, 55),
+                     yticks=[0, 10, 20, 30, 40, 50], xticks=list(yy), xticklabels=["DEV", "OOS"], tick_size=7.5)
+    ax2.set_title("Pooled, DEV vs OOS", fontsize=8.5, fontweight="bold", fontfamily="Garamond", pad=5)
+
     legend_under(page, [Patch(facecolor="#DCE6F1", edgecolor="#000080", linewidth=0.5),
                         Patch(facecolor="#F4CCCC", edgecolor="#C00000", linewidth=0.5)],
-                 ["FNR, miss rate", "FPR, false-alarm rate"], 6.45, 2)
+                 ["FNR, miss rate", "FPR, false-alarm rate"], 6.55, 2)
     finish(page, out, "fig01_rq01_phase_error",
-           "Notes: no miss in the calm, entry and peak phases; the rule pays for that in recovery, where "
-           "43.78% of calm months raise an alarm. Pooled development rates are 10.05% and 24.25%. "
-           "Out-of-sample phase detail is not shown because that score tape is not part of this release.",
-           SRC + " Values: results/rq01_dev_phase_pool.csv.", 6.85)
+           "Notes: no miss in the calm, entry and peak phases; the rule pays for that in recovery, where 43.78% of calm "
+           "months raise an alarm. Pooled rates are 10.05% and 24.25% in development, 15.38% and 23.81% in evaluation, on "
+           "112 scored evaluation months.",
+           SRC + " Values: results/rq01_dev_phase_pool.csv and results/rq01_summary.csv.", 6.95)
 
 
 def fig02(rq02: pd.DataFrame, bottom: pd.DataFrame, out: Path) -> None:
-    page = FigurePage(number=2, title="Forecasting Error for Entry and Exit, and the Asset-Bottom Hit Rate",
+    page = FigurePage(number=None, title="Entry and Exit Forecasting Performance",
                       paragraph="Left: miss rate and false-alarm rate of the two transition models at their "
                                 "selected thresholds, in per cent, by window. Right: share of matured bottom-zone "
                                 "forecasts that contained the trough. A missing false-alarm rate is marked NA "
@@ -162,7 +195,7 @@ def _stage(phase: str) -> int:
 
 
 def fig03(full: pd.DataFrame, out: Path) -> None:
-    page = FigurePage(number=4, title="Portfolio Composition and Regime Evolution, 2005-2024",
+    page = FigurePage(number=None, title="Six-Asset Capital Allocation, 2005-2024",
                       paragraph="Upper panel: weekly weights of the six assets held by the main model, stacked to "
                                 "100% of net asset value. Lower panel: the state actually observed each week on the "
                                 "same time axis, so the regime history is read as a separate band and no label sits "
@@ -223,8 +256,8 @@ def _equity(dataset: Path) -> pd.DataFrame:
 
 def fig04(dev: pd.DataFrame, oos: pd.DataFrame, eq: pd.DataFrame, term: pd.DataFrame,
           weekly: pd.DataFrame, out: Path) -> None:
-    page = FigurePage(number=5,
-                      title="Net Asset Value of the Main Model Against Five Benchmarks and Full Equity",
+    page = FigurePage(number=None,
+                      title="Main Model NAV Against Five Benchmarks and Full Equity",
                       paragraph="Growth of one unit of capital, weekly. Panel (a) is the development window; its "
                                 "benchmarks appear as terminal value lines because only end-of-window levels exist "
                                 "for that period. Panel (b) is the evaluation window, where every benchmark is "
@@ -273,7 +306,7 @@ def fig04(dev: pd.DataFrame, oos: pd.DataFrame, eq: pd.DataFrame, term: pd.DataF
 
 
 def fig05(term: pd.DataFrame, out: Path) -> None:
-    page = FigurePage(number=6, title="Terminal Net Asset Value by Strategy and Window",
+    page = FigurePage(number=None, title="Terminal NAV by Strategy and Window",
                       paragraph="Terminal growth of one unit of capital for the main model, the five passive "
                                 "benchmarks and the fully invested equity reference, in each window. Bars keep the "
                                 "same order in both panels; the equity reference is the relevant yardstick because "
@@ -304,7 +337,7 @@ def fig05(term: pd.DataFrame, out: Path) -> None:
 
 
 def fig06(out: Path) -> None:
-    page = FigurePage(number=3, title="Restructuring States and the Allocation Rule Attached to Each State",
+    page = FigurePage(number=None, title="Restructuring States and Allocation Rules",
                       paragraph="Schematic of the state machine. Each box names a state and the portfolio rule "
                                 "that applies inside it; each arrow carries the trigger that moves the policy to the "
                                 "next state. Triggers come from the identification and forecasting layers, so the "
@@ -356,7 +389,7 @@ def main() -> None:
     ap.add_argument("--handoff", required=True)
     a = ap.parse_args()
     R = Path(a.repo); res = R / "results"; D = Path(a.dataset); H = Path(a.handoff)
-    fig01(pd.read_csv(res / "rq01_dev_phase_pool.csv"), res)
+    fig01(pd.read_csv(res / "rq01_dev_phase_pool.csv"), pd.read_csv(res / "rq01_summary.csv"), res)
     fig02(pd.read_csv(res / "rq02_entry_exit.csv"), pd.read_csv(res / "rq02_bottom_zone.csv"), res)
     fig03(pd.read_csv(res / "rq03_standard/CHOSEN_STANDARD_LEDGER_FULL.csv"), res)
     weekly = pd.read_csv(H / "RQ02_DEV_MAX_LEADTIME_20261026/OVERLAY_2020/BENCHMARK_OOS_WEEKLY.csv",
