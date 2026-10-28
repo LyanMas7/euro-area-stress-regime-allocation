@@ -1,7 +1,8 @@
 """Representative Individual / Joint / Pool methodology diagrams (RQ01 and RQ02).
 
-Compact, unnumbered GT2006-canvas exhibits. Connectors use orthogonal segments
-and a single junction per convergence; arrows never cross text or boxes.
+Compact, unnumbered GT2006-canvas exhibits. Indicator labels sit outside the
+connector corridor; threshold labels sit outside the plotted region; connectors
+use orthogonal segments and a single junction per convergence.
 """
 from __future__ import annotations
 
@@ -35,7 +36,6 @@ def box(page: FigurePage, x: float, y: float, w: float, h: float, text: str,
 
 
 def seg(page: FigurePage, x1: float, y1: float, x2: float, y2: float, arrow_end: bool = True) -> None:
-    """Straight horizontal or vertical connector; no diagonal routing."""
     page.fig.add_artist(FancyArrowPatch((x1 / page.W, 1 - y1 / page.H), (x2 / page.W, 1 - y2 / page.H),
                                         transform=page.fig.transFigure, arrowstyle="-|>" if arrow_end else "-",
                                         mutation_scale=9, linewidth=0.8, color=INK))
@@ -43,7 +43,6 @@ def seg(page: FigurePage, x1: float, y1: float, x2: float, y2: float, arrow_end:
 
 def junction(page: FigurePage, centers: list[float], y_from: float, y_bus: float,
              x_in: float, y_in: float) -> None:
-    """Drop each input to a horizontal bus, then one vertical into the target node."""
     for cx in centers:
         seg(page, cx, y_from, cx, y_bus, arrow_end=False)
     if centers:
@@ -62,11 +61,11 @@ def timeline_ax(page: FigurePage, x0: float, y: float, w: float, h: float):
 def fig_ijp01(out: Path) -> None:
     page = FigurePage(number=None, title="Individual Signal - Six-Month Observation Window", top_in=0.80,
                       paragraph="An Individual source votes at each issue month. Seven monthly observations form "
-                                "21 pairwise comparisons and one endpoint difference; a comparison confirms only when "
-                                "it is positive and reaches a magnitude cut. The vote needs one strong movement, or "
-                                "a weak movement backed by a count of confirming comparisons.")
+                                "21 pairwise comparisons and six endpoint differences relative to the final "
+                                "observation; the bracket below shows one of them, first to last. A comparison "
+                                "confirms only when it is positive and reaches a magnitude cut.")
     ax = timeline_ax(page, 0.95, 2.25, 6.60, 2.30)
-    xs = np.linspace(1, 11, 7)
+    xs = np.linspace(1, 9, 7)
     ys = [7.6, 6.4, 7.0, 5.2, 6.0, 4.6, 8.6]
     ax.plot(xs, ys, "o", color=NAVY, markersize=6, zorder=3)
     for i in range(6):
@@ -77,15 +76,15 @@ def fig_ijp01(out: Path) -> None:
     ax.plot([xs[-1], xs[-1]], [1.9, ys[-1]], color=INK, lw=0.5, linestyle=":")
     ax.annotate("", xy=(xs[0], 1.9), xytext=(xs[-1], 1.9),
                 arrowprops=dict(arrowstyle="<|-|>", color=INK, lw=0.9))
-    ax.text(6.0, 1.15, "endpoint difference D = sign x (last - first)", fontsize=8,
-            fontfamily="Garamond", ha="center")
-    ax.axhline(7.9, xmin=0.02, xmax=0.85, color=MAG, lw=0.9, linestyle=(0, (5, 2.5)))
-    ax.text(10.35, 7.9, "strong cut = Q75", fontsize=7.4, fontfamily="Garamond", va="center",
+    ax.text(5.0, 1.12, "endpoint difference shown: first to last - one of six endpoint differences",
+            fontsize=7.8, fontfamily="Garamond", ha="center")
+    ax.axhline(7.9, xmin=0.02, xmax=0.74, color=MAG, lw=0.9, linestyle=(0, (5, 2.5)))
+    ax.text(9.30, 7.9, "strong cut = Q75", fontsize=7.4, fontfamily="Garamond", va="center",
             color=MAG, ha="left", clip_on=False)
-    ax.axhline(3.2, xmin=0.02, xmax=0.85, color=GREEN, lw=0.9, linestyle=(0, (5, 2.5)))
-    ax.text(10.35, 3.2, "weak cut = Q35", fontsize=7.4, fontfamily="Garamond", va="center",
+    ax.axhline(3.2, xmin=0.02, xmax=0.74, color=GREEN, lw=0.9, linestyle=(0, (5, 2.5)))
+    ax.text(9.30, 3.2, "weak cut = Q35", fontsize=7.4, fontfamily="Garamond", va="center",
             color=GREEN, ha="left", clip_on=False)
-    ax.text(6.0, 9.4, "up = confirming direction (green), down = opposing (red)", fontsize=7.6,
+    ax.text(5.0, 9.4, "up = confirming direction (green), down = opposing (red)", fontsize=7.6,
             fontfamily="Garamond", ha="center")
 
     box(page, 0.95, 4.95, 2.05, 0.72, "Strong movement:\nD >= Q75")
@@ -95,8 +94,9 @@ def fig_ijp01(out: Path) -> None:
     junction(page, [1.975, 4.25, 6.525], 5.67, 5.92, 4.25, 6.30)
 
     finish(page, out, "fig_ijp01_rq01_individual",
-           "Notes: seven observations create 21 comparisons; the count threshold is half of them. The vote is issued "
-           "at the issue month only, with no persistence requirement.",
+           "Notes: seven observations create 21 pairwise comparisons and six endpoint differences relative to the "
+           "final observation; the count threshold is half of the comparisons. The vote is issued at the issue month "
+           "only, with no persistence requirement.",
            "Source: author's illustration of the executed confirmation kernel. Full thresholds: Appendix A.1.", 7.45)
 
 
@@ -105,34 +105,34 @@ def fig_ijp02(out: Path) -> None:
                       paragraph="A Joint pair combines two indicators observed in the same month. Each member keeps "
                                 "its own magnitude cut; paired movements are counted on synchronized bases. Selection "
                                 "gates decide which pairs may enter the rule; the activation gates run afterwards.")
-    ax = timeline_ax(page, 0.95, 2.25, 6.60, 2.30)
+    ax = timeline_ax(page, 0.95, 2.25, 6.60, 2.55)
     xa = np.linspace(1, 11, 7)
     ax.plot(xa, [8.0] * 7, "o", color=NAVY, markersize=5)
-    ax.text(0.05, 9.15, "Indicator A (monthly) - its own Q35/Q75 cuts", fontsize=8.5, fontfamily="Garamond", va="bottom")
+    ax.text(0.05, 9.15, "Indicator A (monthly)", fontsize=8.5, fontfamily="Garamond", va="bottom")
     ax.plot([1, 10.2], [8.6, 8.6], color=MAG, lw=0.8, linestyle=(0, (5, 2.5)))
     ax.text(10.35, 8.6, "Q75(A)", fontsize=7.4, fontfamily="Garamond", va="center", color=MAG,
             ha="left", clip_on=False)
-    xb = np.linspace(1.5, 11.5, 7)
+    xb = xa
     ax.plot(xb, [3.4] * 7, "s", color=GREEN, markersize=5)
-    ax.text(0.05, 4.55, "Indicator B (same calendar months) - its own cuts", fontsize=8.5, fontfamily="Garamond", va="bottom")
-    ax.plot([1, 10.2], [4.0, 4.0], color=GREEN, lw=0.8, linestyle=(0, (5, 2.5)))
-    ax.text(10.35, 4.0, "Q35(B)", fontsize=7.4, fontfamily="Garamond", va="center", color=GREEN,
+    for x in xa[:4]:
+        ax.plot([x, x], [8.0, 3.4], color=INK, lw=0.5, linestyle=":")
+    ax.plot([1, 10.2], [2.5, 2.5], color=GREEN, lw=0.8, linestyle=(0, (5, 2.5)))
+    ax.text(10.35, 2.5, "Q35(B)", fontsize=7.4, fontfamily="Garamond", va="center", color=GREEN,
             ha="left", clip_on=False)
-    for a, b in zip(xa[:4], xb[:4]):
-        ax.plot([a, b], [8.0, 3.4], color=INK, lw=0.5, linestyle=":")
-    ax.text(8.1, 5.9, "synchronized bases\n(same issue, EXACT L = 0)", fontsize=7.6, fontfamily="Garamond",
-            ha="center", va="center")
+    ax.text(0.05, 1.60, "Indicator B (same calendar months)", fontsize=8.5, fontfamily="Garamond", va="top")
+    ax.text(8.3, 1.60, "synchronized bases (same issue, EXACT L = 0)", fontsize=7.6, fontfamily="Garamond",
+            ha="center", va="top")
 
-    box(page, 0.95, 4.95, 2.05, 0.72, "Selection gates:\n>= 2 matched pairs,\n15% false-alarm budget")
-    box(page, 3.225, 4.95, 2.05, 0.72, "Gate 1 - magnitudes:\neach member must pass\nits own base test")
-    box(page, 5.50, 4.95, 2.05, 0.72, "Gate 2 - counts:\nstrong pairs, or a majority\nof paired confirmations")
-    box(page, 2.675, 6.30, 3.15, 0.70, "Joint activation = Gate 1 AND Gate 2", fill="#FCE4D6", size=8.2)
-    junction(page, [1.975, 4.25, 6.525], 5.67, 5.92, 4.25, 6.30)
+    box(page, 0.95, 5.35, 2.05, 0.72, "Selection gates:\n>= 2 matched pairs,\n15% false-alarm budget")
+    box(page, 3.225, 5.35, 2.05, 0.72, "Gate 1 - magnitudes:\neach member must pass\nits own base test")
+    box(page, 5.50, 5.35, 2.05, 0.72, "Gate 2 - counts:\nstrong pairs, or a majority\nof paired confirmations")
+    box(page, 2.675, 6.70, 3.15, 0.70, "Joint activation = Gate 1 AND Gate 2", fill="#FCE4D6", size=8.2)
+    junction(page, [1.975, 4.25, 6.525], 6.07, 6.32, 4.25, 6.70)
 
     finish(page, out, "fig_ijp02_rq01_joint",
            "Notes: the thresholds that select a pair are applied once; the activation thresholds are applied at every "
            "issue afterwards. Insufficient data yields NOT_EVALUATED, never a calm vote.",
-           "Source: author's illustration of the executed pair machinery. Full thresholds: Appendix A.2-A.3.", 7.45)
+           "Source: author's illustration of the executed pair machinery. Full thresholds: Appendix A.2-A.3.", 7.85)
 
 
 def fig_ijp03(out: Path) -> None:
@@ -223,24 +223,25 @@ def fig_ijp06(out: Path) -> None:
                                 "that both pass their own magnitude cuts, and require the members to be published "
                                 "before the issue date. Long pairs feed entry; the short pair set feeds exit and "
                                 "bottom factors.")
-    ax = timeline_ax(page, 0.95, 2.30, 6.60, 2.90)
+    ax = timeline_ax(page, 0.95, 2.30, 6.60, 2.80)
     xa = np.linspace(1, 11, 7)
     ax.plot(xa, [7.6] * 7, "o", color=NAVY, markersize=5)
     ax.text(0.05, 8.8, "long indicator (27-month change window)", fontsize=8.5, fontfamily="Garamond", va="bottom")
-    xb = np.linspace(1.5, 11.5, 7)
-    ax.plot(xb, [3.0] * 7, "s", color=GREEN, markersize=5)
-    ax.text(0.05, 4.2, "short indicator (6-month change window)", fontsize=8.5, fontfamily="Garamond", va="bottom")
-    for a, b in zip(xa, xb):
-        ax.plot([a, b], [7.6, 3.0], color=INK, lw=0.5, linestyle=":")
-    ax.text(6.0, 1.45, "paired bases counted only when both members pass their cuts\nand both are published before the issue (EXACT L = 0)",
-            fontsize=7.8, fontfamily="Garamond", ha="center", va="center")
-    box(page, 0.95, 5.75, 2.05, 0.72, "Long pairs:\nL_CG and L_DSR-P\nfeed the entry pool")
-    box(page, 3.225, 5.75, 2.05, 0.72, "Short pairs:\nall 21 pairs\nfeed exit and bottom")
-    box(page, 5.50, 5.75, 2.05, 0.72, "Pool:\nindividual + joint\nthresholded per model")
+    ax.plot(xa, [3.0] * 7, "s", color=GREEN, markersize=5)
+    for x in xa:
+        ax.plot([x, x], [7.6, 3.0], color=INK, lw=0.5, linestyle=":")
+    ax.text(0.05, 2.05, "short indicator (6-month change window)", fontsize=8.5, fontfamily="Garamond", va="top")
+    page.fig.text(0.95 / page.W, 1 - 5.42 / page.H,
+                  "Paired bases are counted only when both members pass their cuts and both are published before the "
+                  "issue (EXACT L = 0).",
+                  ha="left", va="top", fontsize=7.6, fontfamily="Garamond")
+    box(page, 0.95, 5.95, 2.05, 0.72, "Long pairs:\nL_CG and L_DSR-P\nfeed the entry pool")
+    box(page, 3.225, 5.95, 2.05, 0.72, "Short pairs:\nall 21 pairs\nfeed exit and bottom")
+    box(page, 5.50, 5.95, 2.05, 0.72, "Pool:\nindividual + joint\nthresholded per model")
     finish(page, out, "fig_ijp06_rq02_joint",
            "Notes: synchronization uses the monthly intersection with a single quarterly anchor, so a carried quarter "
            "is never counted twice.",
-           "Source: author's illustration of the executed pair geometry. Full thresholds: Appendix B.2-B.3.", 6.95)
+           "Source: author's illustration of the executed pair geometry. Full thresholds: Appendix B.2-B.3.", 7.20)
 
 
 def main() -> None:
