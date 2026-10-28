@@ -233,7 +233,9 @@ false alarms, so it is close to a pure trade rather than a free improvement. The
 the character of the rule: it removes {int(joi.alarms - pool.alarms)} alarms and costs {pool.FNR - joi.FNR:.2f} points of
 miss rate. Reading the rule as "threshold plus two filters" is therefore more accurate than reading it as a vote.
 
-**By phase.** {table(r1p, ["phase_label", "n", "TP", "FN", "FP", "TN", "FNR", "FPR"], {'n': '{:.0f}', 'TP': '{:.0f}', 'FN': '{:.0f}', 'FP': '{:.0f}', 'TN': '{:.0f}', 'FNR': '{:.2f}%', 'FPR': '{:.2f}%'})}
+**By phase.**
+
+{table(r1p.rename(columns={"phase_label": "Financial Phase"}), ["Financial Phase", "n", "TP", "FN", "FP", "TN", "FNR", "FPR"], {'n': '{:.0f}', 'TP': '{:.0f}', 'FN': '{:.0f}', 'FP': '{:.0f}', 'TN': '{:.0f}', 'FNR': '{:.2f}%', 'FPR': '{:.2f}%'})}
 The rule is conservative while the economy is calm or entering stress (no misses in the pre-entry, entry and peak
 phases) and pays for that in recovery, where four calm months in ten raise an alarm. In the exit phase the balance
 reverses: the miss rate rises to 14.39% while false alarms fall. A user who cares about not missing stress should read
@@ -498,7 +500,9 @@ The Main Model carries the deepest drawdown of the group in development (32.84% 
 and 3.4–5.0% for the optimised benchmarks) and the highest weekly expected shortfall in both windows (4.52% and 3.95%).
 That is the price of the return premium, and it is paid continuously rather than in a single episode.
 
-**Where the return is made.** {table(allp.reset_index(), ["period", "avg_equity_pct", "avg_bond_pct", "avg_turnover_pct", "total_cost_pct_nav"], {'avg_equity_pct': '{:.2f}%', 'avg_bond_pct': '{:.2f}%', 'avg_turnover_pct': '{:.2f}%', 'total_cost_pct_nav': '{:.2f}%'})}
+**Where the return is made.**
+
+{table(allp.reset_index(), ["period", "avg_equity_pct", "avg_bond_pct", "avg_turnover_pct", "total_cost_pct_nav"], {'avg_equity_pct': '{:.2f}%', 'avg_bond_pct': '{:.2f}%', 'avg_turnover_pct': '{:.2f}%', 'total_cost_pct_nav': '{:.2f}%'})}
 The strategy carries an average equity share of {allp.loc["DEV", "avg_equity_pct"]:.1f}% and pays
 {allp.loc["DEV", "total_cost_pct_nav"]:.2f}% of NAV in costs over fifteen years.
 

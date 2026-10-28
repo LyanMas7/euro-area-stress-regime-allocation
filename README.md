@@ -163,7 +163,9 @@ false alarms, so it is close to a pure trade rather than a free improvement. The
 the character of the rule: it removes 27 alarms and costs 5.03 points of
 miss rate. Reading the rule as "threshold plus two filters" is therefore more accurate than reading it as a vote.
 
-**By phase.** | phase_label | n | TP | FN | FP | TN | FNR | FPR |
+**By phase.**
+
+| Financial Phase | n | TP | FN | FP | TN | FNR | FPR |
 |---|---|---|---|---|---|---|---|
 | Pre-entry | 148 | 1 | 0 | 6 | 141 | 0.00% | 4.08% |
 | Entry | 44 | 6 | 0 | 7 | 31 | 0.00% | 18.42% |
@@ -480,7 +482,9 @@ The Main Model carries the deepest drawdown of the group in development (32.84% 
 and 3.4–5.0% for the optimised benchmarks) and the highest weekly expected shortfall in both windows (4.52% and 3.95%).
 That is the price of the return premium, and it is paid continuously rather than in a single episode.
 
-**Where the return is made.** | period | avg_equity_pct | avg_bond_pct | avg_turnover_pct | total_cost_pct_nav |
+**Where the return is made.**
+
+| period | avg_equity_pct | avg_bond_pct | avg_turnover_pct | total_cost_pct_nav |
 |---|---|---|---|---|
 | DEV | 72.60% | 10.94% | 7.80% | 4.09% |
 | OOS | 72.24% | 5.27% | 9.76% | 1.54% |
@@ -682,6 +686,8 @@ Peak, trough and recovery are phase classifications in the executed code, not pr
 
 | Parameter / Rule | Selected value | Unit | Activation condition | Interpretation |
 |---|---|---|---|---|
+| Normal state definition | pooled decision calm; P_N = 1 - P_S | probability | every issue in the RQ03 overlay | When the pooled rule is calm the overlay sets P_S to the weekly entry hazard 1-(1-p12)^(1/52), so P_N is the probability that stress does not start within the week |
+| Stress state definition | pooled decision fires; P_N = weekly exit hazard | probability | every issue in the RQ03 overlay | When the pooled rule fires the overlay sets P_N to the weekly exit hazard 1-(1-p_exit)^(1/13), so P_S is the probability that the episode continues; P_N and P_S are complementary by construction |
 | Peak percentile p_E | 0.90 | quantile | phase classification | Peak branch requires a rise above this quantile of the normal-state reference |
 | Peak percentile p_P | 0.75 | quantile | phase classification | Peak level test |
 | De-escalation percentile p_D | 0.50 | quantile | phase classification | Falling below the median marks de-escalation |
@@ -718,7 +724,7 @@ The five-vote short system and the last-short flag that feeds the allocation sta
 | S5 vote universe | EW, IVOL, MVP, ERC, MaxDiv | portfolio | every issue | Five portfolio votes, three tail measures each, 30 series in total |
 | S5 tail parameters | alpha 0.95 / 0.975 / 0.99; EWMA lambda 0.94; lookback 52 | level / weight / weeks | every issue | Peak detection uses the first argmax inside (H6, T] |
 
-#### B.4 Entry and exit forecasting thresholds
+#### B.4 Entry forecasting thresholds
 
 Registered operating points are reported next to the selection rule the executed path actually uses.
 
@@ -727,9 +733,6 @@ Registered operating points are reported next to the selection rule the executed
 | Registered entry model | M11_LOGISTIC_L2_STRONG | model id | reported operating point | Logistic L2 model on the long-horizon confirmation set |
 | Registered entry horizon | 18 | months | reported operating point | Forecast window of the entry question (H6 = 18 months) |
 | Registered entry threshold | 0.111821 | probability | p_entry >= 0.111821 | Reported out-of-sample operating point |
-| Registered exit model | LOGISTIC_L2_STRONG_PLUS_DURATION | model id | reported operating point | Logistic L2 model plus a duration term |
-| Registered exit horizon | 3 | months | reported operating point | Forecast window of the exit question |
-| Registered exit threshold | 0.027174 | probability | p_exit >= 0.027174 | Reported operating point, also used by the RQ03 phase overlay |
 | Horizon-register threshold - H15 | 0.3196694994575123 | probability | p >= 0.3196694994575123 | Registered threshold for that horizon in the ladder; only H6 is used by the registered entry point |
 | Horizon-register threshold - H12 | 0.2214215326280583 | probability | p >= 0.2214215326280583 | Registered threshold for that horizon in the ladder; only H6 is used by the registered entry point |
 | Horizon-register threshold - H10 | 0.2166420964185038 | probability | p >= 0.2166420964185038 | Registered threshold for that horizon in the ladder; only H6 is used by the registered entry point |
@@ -737,11 +740,21 @@ Registered operating points are reported next to the selection rule the executed
 | Horizon-register threshold - H6 | 0.1594707667685234 | probability | p >= 0.1594707667685234 | Registered threshold for that horizon in the ladder; only H6 is used by the registered entry point |
 | Executed entry horizon ladder | H15 / H12 / H10 / H8 / H6 = 45 / 36 / 30 / 24 / 18 | months | entry training | Four model families are fitted at each horizon |
 | Executed entry selection rule | feasible if FNR < 0.10 and FPR < 0.20; then min FN, then min FP | rate | threshold search | Operating point chosen inside the feasible set |
+
+#### B.5 Exit forecasting thresholds
+
+Registered and executed exit operating points, including Exit-A and Exit-B.
+
+| Parameter / Rule | Selected value | Unit | Activation condition | Interpretation |
+|---|---|---|---|---|
+| Registered exit model | LOGISTIC_L2_STRONG_PLUS_DURATION | model id | reported operating point | Logistic L2 model plus a duration term |
+| Registered exit horizon | 3 | months | reported operating point | Forecast window of the exit question |
+| Registered exit threshold | 0.027174 | probability | p_exit >= 0.027174 | Reported operating point, also used by the RQ03 phase overlay |
 | Executed exit horizons | 3 / 6 / 12 / 18 | months | exit training | Exit is fitted at four horizons; the phase overlay uses three months |
 | Executed exit selection rule | feasible if FNR < 0.05 and FPR < 0.15; 0.5 confusion weight | rate | threshold search | Operating point chosen inside the feasible set |
 | Exit-A and Exit-B | B = A + stacked RQ01 probability | model | exit models | Two exit models exist; the bridge that would score Exit-B is never called, so B is NOT_EVALUATED |
 
-#### B.5 Asset-price bottom thresholds
+#### B.6 Asset-price bottom thresholds
 
 Three independent factors, a two-of-three vote and an ex-post truth window.
 
@@ -842,8 +855,18 @@ Across the 1041 weeks of the full period the policy spends 34 weeks in the norma
 | 4 | 2014-09-05 | 2020-06-05 | 2020-07-10 | 306 |
 | 5 | 2020-11-06 | 2023-02-10 | 2023-03-10 | 123 |
 
+#### C.5 Assumption classes
+
+Each RQ03 row above carries one of the following classes, reported separately so that design choices are never presented as fitted parameters.
+
+| Category | Meaning | Rows in the register |
+|---|---|---:|
+| Fixed assumption | design choice, not fitted | 14 |
+| Calibrated | selected on the development window | 29 |
+| Calculated | derived quantity, not a parameter | 1 |
+
 ### Threshold completeness audit
-128 rows are published: 60 traced to a code line, 68 traced to a selected-configuration file, 0 unverified. Status counts: 122 active, 3 inert, 2 not implemented or not available.
+130 rows are published: 62 traced to a code line, 68 traced to a selected-configuration file, 0 unverified. Status counts: 124 active, 3 inert, 2 not implemented or not available.
 | Id | Area | Severity | Finding | Action |
 |---|---|---|---|---|
 | D1 | RQ03 | high | The executed allocation engine (W16_S4BOT_Z2) is not part of this repository. The overlay module points to an owner hand-off tree, so the RQ03 numbers are traceable to the selected configuration dump and to the executed ledger columns, not to shipped source. | Ship the engine with the next release, or treat the parameter table as the authoritative record. |

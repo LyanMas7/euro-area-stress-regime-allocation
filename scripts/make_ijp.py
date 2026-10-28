@@ -1,7 +1,7 @@
 """Representative Individual / Joint / Pool methodology diagrams (RQ01 and RQ02).
 
-Compact, unnumbered GT2006-canvas exhibits. Full numerical configurations live in
-the appendix; these diagrams show the mechanism with representative indicators.
+Compact, unnumbered GT2006-canvas exhibits. Connectors use orthogonal segments
+and a single junction per convergence; arrows never cross text or boxes.
 """
 from __future__ import annotations
 
@@ -10,7 +10,6 @@ from pathlib import Path
 
 import matplotlib
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import FancyArrowPatch, Rectangle
 
@@ -27,23 +26,29 @@ GREY = "#555555"
 
 
 def box(page: FigurePage, x: float, y: float, w: float, h: float, text: str,
-        size: float = 8.2, lw: float = 0.6, fill: str | None = None) -> None:
-    if fill:
-        page.fig.add_artist(Rectangle((x / page.W, 1 - (y + h) / page.H), w / page.W, h / page.H,
-                                      transform=page.fig.transFigure, facecolor=fill,
-                                      edgecolor=INK, linewidth=lw, zorder=1))
-    else:
-        page.fig.add_artist(Rectangle((x / page.W, 1 - (y + h) / page.H), w / page.W, h / page.H,
-                                      transform=page.fig.transFigure, fill=False,
-                                      edgecolor=INK, linewidth=lw, zorder=1))
+        size: float = 7.8, fill: str | None = None) -> None:
+    page.fig.add_artist(Rectangle((x / page.W, 1 - (y + h) / page.H), w / page.W, h / page.H,
+                                  transform=page.fig.transFigure, facecolor=fill or "white",
+                                  edgecolor=INK, linewidth=0.6, zorder=1))
     page.fig.text((x + w / 2) / page.W, 1 - (y + h / 2) / page.H, text, ha="center", va="center",
-                  fontsize=size, fontfamily="Garamond", linespacing=1.3, zorder=2)
+                  fontsize=size, fontfamily="Garamond", linespacing=1.28, zorder=2)
 
 
-def arrow(page: FigurePage, x1: float, y1: float, x2: float, y2: float) -> None:
+def seg(page: FigurePage, x1: float, y1: float, x2: float, y2: float, arrow_end: bool = True) -> None:
+    """Straight horizontal or vertical connector; no diagonal routing."""
     page.fig.add_artist(FancyArrowPatch((x1 / page.W, 1 - y1 / page.H), (x2 / page.W, 1 - y2 / page.H),
-                                        transform=page.fig.transFigure, arrowstyle="-|>", mutation_scale=9,
-                                        linewidth=0.8, color=INK))
+                                        transform=page.fig.transFigure, arrowstyle="-|>" if arrow_end else "-",
+                                        mutation_scale=9, linewidth=0.8, color=INK))
+
+
+def junction(page: FigurePage, centers: list[float], y_from: float, y_bus: float,
+             x_in: float, y_in: float) -> None:
+    """Drop each input to a horizontal bus, then one vertical into the target node."""
+    for cx in centers:
+        seg(page, cx, y_from, cx, y_bus, arrow_end=False)
+    if centers:
+        seg(page, centers[0], y_bus, centers[-1], y_bus, arrow_end=False)
+    seg(page, x_in, y_bus, x_in, y_in)
 
 
 def timeline_ax(page: FigurePage, x0: float, y: float, w: float, h: float):
@@ -60,7 +65,7 @@ def fig_ijp01(out: Path) -> None:
                                 "21 pairwise comparisons and one endpoint difference; a comparison confirms only when "
                                 "it is positive and reaches a magnitude cut. The vote needs one strong movement, or "
                                 "a weak movement backed by a count of confirming comparisons.")
-    ax = timeline_ax(page, 0.95, 2.30, 6.60, 2.55)
+    ax = timeline_ax(page, 0.95, 2.25, 6.60, 2.30)
     xs = np.linspace(1, 11, 7)
     ys = [7.6, 6.4, 7.0, 5.2, 6.0, 4.6, 8.6]
     ax.plot(xs, ys, "o", color=NAVY, markersize=6, zorder=3)
@@ -68,30 +73,29 @@ def fig_ijp01(out: Path) -> None:
         col = GREEN if ys[i + 1] >= ys[i] else RED
         ax.annotate("", xy=(xs[i + 1], ys[i + 1]), xytext=(xs[i], ys[i]),
                     arrowprops=dict(arrowstyle="-|>", color=col, lw=0.9, mutation_scale=7))
-    ax.plot([xs[0], xs[0]], [2.2, ys[0]], color=INK, lw=0.5, linestyle=":")
-    ax.plot([xs[-1], xs[-1]], [2.2, ys[-1]], color=INK, lw=0.5, linestyle=":")
-    ax.annotate("", xy=(xs[0], 2.2), xytext=(xs[-1], 2.2),
+    ax.plot([xs[0], xs[0]], [1.9, ys[0]], color=INK, lw=0.5, linestyle=":")
+    ax.plot([xs[-1], xs[-1]], [1.9, ys[-1]], color=INK, lw=0.5, linestyle=":")
+    ax.annotate("", xy=(xs[0], 1.9), xytext=(xs[-1], 1.9),
                 arrowprops=dict(arrowstyle="<|-|>", color=INK, lw=0.9))
-    ax.text(6.0, 1.45, "endpoint difference D = sign x (last - first)", fontsize=8,
+    ax.text(6.0, 1.15, "endpoint difference D = sign x (last - first)", fontsize=8,
             fontfamily="Garamond", ha="center")
     ax.axhline(7.9, xmin=0.02, xmax=0.98, color=MAG, lw=0.9, linestyle=(0, (5, 2.5)))
-    ax.text(11.6, 7.9, "strong cut = Q75", fontsize=7.6, fontfamily="Garamond", va="center", color=MAG)
+    ax.text(11.6, 7.9, "strong cut = Q75", fontsize=7.4, fontfamily="Garamond", va="center", color=MAG)
     ax.axhline(3.2, xmin=0.02, xmax=0.98, color=GREEN, lw=0.9, linestyle=(0, (5, 2.5)))
-    ax.text(11.6, 3.2, "weak cut = Q35", fontsize=7.6, fontfamily="Garamond", va="center", color=GREEN)
+    ax.text(11.6, 3.2, "weak cut = Q35", fontsize=7.4, fontfamily="Garamond", va="center", color=GREEN)
     ax.text(6.0, 9.4, "up = confirming direction (green), down = opposing (red)", fontsize=7.6,
             fontfamily="Garamond", ha="center")
-    box(page, 0.95, 5.35, 2.05, 0.62, "Strong movement:\nD >= Q75")
-    box(page, 3.20, 5.35, 2.05, 0.62, "Weak movement:\nQ35 <= D < Q75")
-    box(page, 5.45, 5.35, 2.10, 0.62, "Count confirmation:\nk >= ceil(M / 2) of M pairs")
-    arrow(page, 3.0, 5.66, 3.20, 5.66)
-    arrow(page, 5.25, 5.66, 5.45, 5.66)
-    box(page, 2.70, 6.35, 2.85, 0.55, "Individual vote = Strong\nOR (Weak AND Count)", fill="#FCE4D6")
-    arrow(page, 2.05, 5.35, 2.62, 6.35)
-    arrow(page, 4.23, 5.35, 3.70, 6.35)
+
+    box(page, 0.95, 4.95, 2.05, 0.72, "Strong movement:\nD >= Q75")
+    box(page, 3.225, 4.95, 2.05, 0.72, "Weak movement:\nQ35 <= D < Q75")
+    box(page, 5.50, 4.95, 2.05, 0.72, "Count confirmation:\nk >= ceil(M / 2) of M pairs")
+    box(page, 2.675, 6.30, 3.15, 0.70, "Individual vote = Strong OR (Weak AND Count)", fill="#FCE4D6", size=8.2)
+    junction(page, [1.975, 4.25, 6.525], 5.67, 5.92, 4.25, 6.30)
+
     finish(page, out, "fig_ijp01_rq01_individual",
            "Notes: seven observations create 21 comparisons; the count threshold is half of them. The vote is issued "
            "at the issue month only, with no persistence requirement.",
-           "Source: author's illustration of the executed confirmation kernel. Full thresholds: Appendix A.1.", 7.30)
+           "Source: author's illustration of the executed confirmation kernel. Full thresholds: Appendix A.1.", 7.45)
 
 
 def fig_ijp02(out: Path) -> None:
@@ -99,7 +103,7 @@ def fig_ijp02(out: Path) -> None:
                       paragraph="A Joint pair combines two indicators observed in the same month. Each member keeps "
                                 "its own magnitude cut; paired movements are counted on synchronized bases. Selection "
                                 "gates decide which pairs may enter the rule; the activation gates run afterwards.")
-    ax = timeline_ax(page, 0.95, 2.30, 6.60, 2.55)
+    ax = timeline_ax(page, 0.95, 2.25, 6.60, 2.30)
     xa = np.linspace(1, 11, 7)
     ax.plot(xa, [8.0] * 7, "o", color=NAVY, markersize=5)
     ax.text(0.05, 9.15, "Indicator A (monthly) - its own Q35/Q75 cuts", fontsize=8.5, fontfamily="Garamond", va="bottom")
@@ -114,45 +118,48 @@ def fig_ijp02(out: Path) -> None:
         ax.plot([a, b], [8.0, 3.4], color=INK, lw=0.5, linestyle=":")
     ax.text(3.4, 5.8, "synchronized bases\n(same issue, EXACT L = 0)", fontsize=7.6, fontfamily="Garamond",
             ha="center", va="center")
-    box(page, 0.95, 5.35, 2.05, 0.62, "Selection gates:\n>= 2 matched pairs,\n15% false-alarm budget")
-    box(page, 3.20, 5.35, 2.05, 0.62, "Gate 1 - magnitudes:\neach member must pass\nits own base test")
-    box(page, 5.45, 5.35, 2.10, 0.62, "Gate 2 - counts:\nstrong pairs, or a majority\nof paired confirmations")
-    arrow(page, 3.0, 5.66, 3.20, 5.66)
-    arrow(page, 5.25, 5.66, 5.45, 5.66)
-    box(page, 2.70, 6.35, 2.85, 0.55, "Joint activation = Gate 1 AND Gate 2", fill="#FCE4D6")
-    arrow(page, 2.05, 5.35, 2.62, 6.35)
-    arrow(page, 4.23, 5.35, 3.70, 6.35)
+
+    box(page, 0.95, 4.95, 2.05, 0.72, "Selection gates:\n>= 2 matched pairs,\n15% false-alarm budget")
+    box(page, 3.225, 4.95, 2.05, 0.72, "Gate 1 - magnitudes:\neach member must pass\nits own base test")
+    box(page, 5.50, 4.95, 2.05, 0.72, "Gate 2 - counts:\nstrong pairs, or a majority\nof paired confirmations")
+    box(page, 2.675, 6.30, 3.15, 0.70, "Joint activation = Gate 1 AND Gate 2", fill="#FCE4D6", size=8.2)
+    junction(page, [1.975, 4.25, 6.525], 5.67, 5.92, 4.25, 6.30)
+
     finish(page, out, "fig_ijp02_rq01_joint",
            "Notes: the thresholds that select a pair are applied once; the activation thresholds are applied at every "
            "issue afterwards. Insufficient data yields NOT_EVALUATED, never a calm vote.",
-           "Source: author's illustration of the executed pair machinery. Full thresholds: Appendix A.2-A.3.", 7.30)
+           "Source: author's illustration of the executed pair machinery. Full thresholds: Appendix A.2-A.3.", 7.45)
 
 
 def fig_ijp03(out: Path) -> None:
     page = FigurePage(number=None, title="Pool Integration - From Signals to a Stress Decision", top_in=0.80,
                       paragraph="The Pool is not an average and not a vote. A boosted-tree stress probability is "
-                                "compared with the country threshold; one joint packet can only add stress and one "
-                                "can only remove it. If the layers have no data, no vote is issued.")
-    box(page, 0.95, 2.30, 2.05, 0.95, "Individual layer\nfive native indicators,\nstrong / weak / count votes", fill="#DCE6F1")
-    box(page, 3.20, 2.30, 2.05, 0.95, "Joint confirmation\nCLIFS + VIX pair\n(additive packet)", fill="#FCE4D6")
-    box(page, 5.45, 2.30, 2.10, 0.95, "Joint exclusion\nDFC + GFC price pair\n(removal packet)", fill="#E2EFDA")
-    box(page, 2.70, 3.75, 2.85, 0.75, "Pooled score\nboosted-tree probability Ps", fill="white")
-    arrow(page, 1.98, 3.25, 2.85, 3.75)
-    arrow(page, 4.23, 3.25, 3.55, 3.75)
-    arrow(page, 6.50, 3.25, 3.55, 3.75)
-    box(page, 2.70, 5.00, 2.85, 0.75, "Country decision\nPs >= t(country)", fill="white")
-    arrow(page, 4.12, 4.50, 4.12, 5.00)
-    box(page, 1.15, 6.25, 2.20, 0.70, "STRESS\n(rule fires)", fill="#F8CBAD")
-    box(page, 4.85, 6.25, 2.20, 0.70, "CALM\n(rule silent)", fill="#DCE6F1")
-    arrow(page, 3.35, 5.75, 2.25, 6.25)
-    arrow(page, 4.90, 5.75, 5.45, 6.25)
-    page.fig.text(0.5, 1 - 7.45 / page.H,
+                                "compared with the country threshold first; the joint packets then modify the final "
+                                "classification: one can only add stress, one can only remove it.")
+    box(page, 0.95, 2.30, 1.85, 0.85, "Individual layer\nfive indicators,\nstrong / weak / count")
+    seg(page, 2.80, 2.725, 3.10, 2.725)
+    box(page, 3.10, 2.30, 1.75, 0.85, "Boosted-tree\nprobability Ps")
+    seg(page, 4.85, 2.725, 5.15, 2.725)
+    box(page, 5.15, 2.30, 2.40, 0.85, "Country threshold\nPs >= t(country)")
+    box(page, 2.60, 3.60, 3.30, 0.72, "Joint packets: CLIFS + VIX adds stress;\nDFC + GFC price removes stress")
+    box(page, 2.075, 4.75, 3.90, 0.85, "Final stress decision\n( threshold OR additive )  AND NOT  removal", fill="#FCE4D6", size=8.4)
+    seg(page, 6.35, 3.15, 6.35, 4.42, arrow_end=False)
+    seg(page, 6.35, 4.42, 4.025, 4.42, arrow_end=False)
+    seg(page, 4.025, 4.42, 4.025, 4.75)
+    seg(page, 4.25, 4.32, 4.25, 4.75)
+    box(page, 1.55, 6.10, 1.90, 0.65, "STRESS\n(rule fires)", fill="#F8CBAD")
+    box(page, 5.10, 6.10, 1.90, 0.65, "CALM\n(rule silent)", fill="#DCE6F1")
+    seg(page, 4.025, 5.60, 4.025, 5.88, arrow_end=False)
+    seg(page, 2.50, 5.88, 6.05, 5.88, arrow_end=False)
+    seg(page, 2.50, 5.88, 2.50, 6.10)
+    seg(page, 6.05, 5.88, 6.05, 6.10)
+    page.fig.text(0.5, 1 - 7.35 / page.H,
                   "Decision rule:  stress = ( Ps >= t(country) )  OR  pkt_joint_CLIFS_VIX ;   AND NOT  pkt_joint_DFC_GFC",
                   ha="center", va="top", fontsize=9.5, fontfamily="Garamond", fontweight="bold")
     finish(page, out, "fig_ijp03_rq01_pool",
            "Notes: the removal packet can cancel stress raised by either other layer. Country thresholds span two "
            "orders of magnitude because the score is not comparable across countries.",
-           "Source: author's illustration of the registered rule. Country cuts: Appendix A.4.", 8.05)
+           "Source: author's illustration of the registered rule. Country cuts: Appendix A.4.", 7.95)
 
 
 def fig_ijp04(out: Path) -> None:
@@ -171,11 +178,9 @@ def fig_ijp04(out: Path) -> None:
     ax.text(0.05, 3.8, "four eligible quarterly observations", fontsize=8.5, fontfamily="Garamond", va="bottom")
     ax.text(6.0, 1.2, "structural maximum: 6 pairwise comparisons and 3 endpoint differences",
             fontsize=8.5, fontfamily="Garamond", ha="center")
-    box(page, 0.95, 5.75, 2.05, 0.62, "Short magnitude:\nQ75 of prior absolute\nsigned changes")
-    box(page, 3.20, 5.75, 2.05, 0.62, "Direction:\nchange must be positive\n(after sign adjustment)")
-    box(page, 5.45, 5.75, 2.10, 0.62, "Activation:\nvalue >= cut AND\nz-score > 0")
-    arrow(page, 3.0, 6.06, 3.20, 6.06)
-    arrow(page, 5.25, 6.06, 5.45, 6.06)
+    box(page, 0.95, 5.75, 2.05, 0.72, "Short magnitude:\nQ75 of prior absolute\nsigned changes")
+    box(page, 3.225, 5.75, 2.05, 0.72, "Direction:\nchange must be positive\n(after sign adjustment)")
+    box(page, 5.50, 5.75, 2.05, 0.72, "Activation:\nvalue >= cut AND\nz-score > 0")
     finish(page, out, "fig_ijp04_rq02_short",
            "Notes: the same interval contains fewer comparisons for lower-frequency indicators. The count is computed "
            "on eligible bases only; it is never assumed to equal the structural maximum.",
@@ -199,11 +204,9 @@ def fig_ijp05(out: Path) -> None:
             fontfamily="Garamond", ha="center")
     ax.text(5, 3.6, "five distinct milestones: structural maximum of 10 pairwise comparisons and 4 endpoint differences",
             fontsize=8.5, fontfamily="Garamond", ha="center")
-    box(page, 0.95, 5.75, 2.05, 0.62, "Long magnitude:\nQ75 of prior absolute\nsigned changes")
-    box(page, 3.20, 5.75, 2.05, 0.62, "Minimum history:\nat least 12 prior values\nbefore a cut applies")
-    box(page, 5.45, 5.75, 2.10, 0.62, "No look-ahead:\nforecasts use data\npublished by the issue date")
-    arrow(page, 3.0, 6.06, 3.20, 6.06)
-    arrow(page, 5.25, 6.06, 5.45, 6.06)
+    box(page, 0.95, 5.75, 2.05, 0.72, "Long magnitude:\nQ75 of prior absolute\nsigned changes")
+    box(page, 3.225, 5.75, 2.05, 0.72, "Minimum history:\nat least 12 prior values\nbefore a cut applies")
+    box(page, 5.50, 5.75, 2.05, 0.72, "No look-ahead:\nforecasts use data\npublished by the issue date")
     finish(page, out, "fig_ijp05_rq02_long",
            "Notes: the entry horizon ladder runs H15/H12/H10/H8/H6; the published operating point uses the 18-month "
            "horizon. Later observations never reconstruct earlier issued forecasts.",
@@ -227,11 +230,9 @@ def fig_ijp06(out: Path) -> None:
         ax.plot([a, b], [7.6, 3.0], color=INK, lw=0.5, linestyle=":")
     ax.text(6.5, 5.4, "paired bases counted only when both members pass their cuts\nand both are published before the issue (EXACT L = 0)",
             fontsize=7.8, fontfamily="Garamond", ha="center", va="center")
-    box(page, 0.95, 5.75, 2.05, 0.62, "Long pairs:\nL_CG and L_DSR-P\nfeed the entry pool")
-    box(page, 3.20, 5.75, 2.05, 0.62, "Short pairs:\nall 21 pairs\nfeed exit and bottom")
-    box(page, 5.45, 5.75, 2.10, 0.62, "Pool:\nindividual + joint\nthresholded per model")
-    arrow(page, 3.0, 6.06, 3.20, 6.06)
-    arrow(page, 5.25, 6.06, 5.45, 6.06)
+    box(page, 0.95, 5.75, 2.05, 0.72, "Long pairs:\nL_CG and L_DSR-P\nfeed the entry pool")
+    box(page, 3.225, 5.75, 2.05, 0.72, "Short pairs:\nall 21 pairs\nfeed exit and bottom")
+    box(page, 5.50, 5.75, 2.05, 0.72, "Pool:\nindividual + joint\nthresholded per model")
     finish(page, out, "fig_ijp06_rq02_joint",
            "Notes: synchronization uses the monthly intersection with a single quarterly anchor, so a carried quarter "
            "is never counted twice.",
